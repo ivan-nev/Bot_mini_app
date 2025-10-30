@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор треугольника</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .method-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .method-btn {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .method-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .method-btn.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .method-btn h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .method-btn p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .input-group.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-field {
+            flex: 1;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .result.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            color: #666;
+        }
+
+        .result-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .triangle-diagram {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔺 Калькулятор треугольника</h1>
+            <p>Выберите метод расчета и введите данные</p>
+        </div>
+
+        <div class="method-selector">
+            <div class="method-btn active" data-method="twoSidesAngle">
+                <h3>📐 По двум сторонам и углу</h3>
+                <p>Сторона A, Сторона B, Угол между ними</p>
+            </div>
+            <div class="method-btn" data-method="sideTwoAngles">
+                <h3>📏 По стороне и двум углам</h3>
+                <p>Сторона, Угол 1, Угол 2</p>
+            </div>
+            <div class="method-btn" data-method="checkExistence">
+                <h3>✅ Проверить существование</h3>
+                <p>Сторона A, Сторона B, Сторона C</p>
+            </div>
+        </div>
+
+        <!-- Метод 1: По двум сторонам и углу -->
+        <div class="input-group active" id="twoSidesAngle">
+            <div class="input-row">
+                <div class="input-field">
+                    <label>Сторона A</label>
+                    <input type="number" id="sideA1" placeholder="Введите сторону A" step="any" min="0">
+                </div>
+                <div class="input-field">
+                    <label>Сторона B</label>
+                    <input type="number" id="sideB1" placeholder="Введите сторону B" step="any" min="0">
+                </div>
+            </div>
+            <div class="input-field">
+                <label>Угол между сторонами (°)</label>
+                <input type="number" id="angle1" placeholder="Введите угол" step="any" min="0" max="180">
+            </div>
+        </div>
+
+        <!-- Метод 2: По стороне и двум углам -->
+        <div class="input-group" id="sideTwoAngles">
+            <div class="input-field">
+                <label>Известная сторона</label>
+                <input type="number" id="knownSide" placeholder="Введите сторону" step="any" min="0">
+            </div>
+            <div class="input-row">
+                <div class="input-field">
+                    <label>Угол 1 (°)</label>
+                    <input type="number" id="angleA" placeholder="Введите угол 1" step="any" min="0" max="180">
+                </div>
+                <div class="input-field">
+                    <label>Угол 2 (°)</label>
+                    <input type="number" id="angleB" placeholder="Введите угол 2" step="any" min="0" max="180">
+                </div>
+            </div>
+        </div>
+
+        <!-- Метод 3: Проверка существования -->
+        <div class="input-group" id="checkExistence">
+            <div class="input-row">
+                <div class="input-field">
+                    <label>Сторона A</label>
+                    <input type="number" id="sideA3" placeholder="Введите сторону A" step="any" min="0">
+                </div>
+                <div class="input-field">
+                    <label>Сторона B</label>
+                    <input type="number" id="sideB3" placeholder="Введите сторону B" step="any" min="0">
+                </div>
+            </div>
+            <div class="input-field">
+                <label>Сторона C</label>
+                <input type="number" id="sideC3" placeholder="Введите сторону C" step="any" min="0">
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calculate()">Рассчитать</button>
+
+        <div class="error" id="errorMessage"></div>
+
+        <div class="result" id="result">
+            <h3>📊 Результаты расчета</h3>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        class TriangleCalculator {
+            static calculateByTwoSidesAndAngle(side1, side2, angle) {
+                const angleRad = angle * Math.PI / 180;
+                const side3 = Math.sqrt(side1**2 + side2**2 - 2*side1*side2*Math.cos(angleRad));
+                return side3;
+            }
+
+            static calculateBySideAndTwoAngles(side, angle1, angle2) {
+                const angle3 = 180 - angle1 - angle2;
+                if (angle3 <= 0) {
+                    throw new Error("Сумма углов должна быть меньше 180°");
+                }
+
+                const angle1Rad = angle1 * Math.PI / 180;
+                const angle2Rad = angle2 * Math.PI / 180;
+                const angle3Rad = angle3 * Math.PI / 180;
+
+                const side2 = side * Math.sin(angle2Rad) / Math.sin(angle1Rad);
+                const side3 = side * Math.sin(angle3Rad) / Math.sin(angle1Rad);
+
+                return { side2, side3, angle3 };
+            }
+
+            static checkTriangleExistence(side1, side2, side3) {
+                return (
+                    side1 + side2 > side3 &&
+                    side1 + side3 > side2 &&
+                    side2 + side3 > side1
+                );
+            }
+
+            static getTriangleType(side1, side2, side3) {
+                if (side1 === side2 && side2 === side3) {
+                    return "Равносторонний";
+                } else if (side1 === side2 || side1 === side3 || side2 === side3) {
+                    return "Равнобедренный";
+                } else {
+                    return "Разносторонний";
+                }
+            }
+
+            static calculateArea(side1, side2, side3) {
+                const s = (side1 + side2 + side3) / 2;
+                return Math.sqrt(s * (s - side1) * (s - side2) * (s - side3));
+            }
+        }
+
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.setText("Поделиться результатом");
+        tg.MainButton.hide();
+
+        // Обработчики выбора метода
+        document.querySelectorAll('.method-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Убираем активный класс у всех кнопок
+                document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+                // Скрываем все группы ввода
+                document.querySelectorAll('.input-group').forEach(group => group.classList.remove('active'));
+
+                // Активируем выбранную кнопку
+                btn.classList.add('active');
+                // Показываем соответствующую группу ввода
+                const method = btn.dataset.method;
+                document.getElementById(method).classList.add('active');
+
+                // Скрываем предыдущие результаты
+                hideResult();
+            });
+        });
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+            hideResult();
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('active');
+        }
+
+        function showResult(html) {
+            hideError();
+            document.getElementById('resultContent').innerHTML = html;
+            document.getElementById('result').classList.add('active');
+            tg.MainButton.show();
+        }
+
+        function hideResult() {
+            document.getElementById('result').classList.remove('active');
+            tg.MainButton.hide();
+        }
+
+        function calculate() {
+            const activeMethod = document.querySelector('.method-btn.active').dataset.method;
+
+            try {
+                let resultHtml = '';
+
+                if (activeMethod === 'twoSidesAngle') {
+                    const sideA = parseFloat(document.getElementById('sideA1').value);
+                    const sideB = parseFloat(document.getElementById('sideB1').value);
+                    const angle = parseFloat(document.getElementById('angle1').value);
+
+                    if (!sideA || !sideB || !angle) {
+                        showError("Заполните все поля");
+                        return;
+                    }
+
+                    if (angle <= 0 || angle >= 180) {
+                        showError("Угол должен быть между 0° и 180°");
+                        return;
+                    }
+
+                    const sideC = TriangleCalculator.calculateByTwoSidesAndAngle(sideA, sideB, angle);
+                    const perimeter = sideA + sideB + sideC;
+                    const area = TriangleCalculator.calculateArea(sideA, sideB, sideC);
+                    const type = TriangleCalculator.getTriangleType(sideA, sideB, sideC);
+
+                    resultHtml = `
+                        <div class="result-item">
+                            <span class="result-label">Сторона C:</span>
+                            <span class="result-value">${sideC.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Периметр:</span>
+                            <span class="result-value">${perimeter.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Площадь:</span>
+                            <span class="result-value">${area.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Тип:</span>
+                            <span class="result-value">${type}</span>
+                        </div>
+                    `;
+
+                } else if (activeMethod === 'sideTwoAngles') {
+                    const side = parseFloat(document.getElementById('knownSide').value);
+                    const angleA = parseFloat(document.getElementById('angleA').value);
+                    const angleB = parseFloat(document.getElementById('angleB').value);
+
+                    if (!side || !angleA || !angleB) {
+                        showError("Заполните все поля");
+                        return;
+                    }
+
+                    const result = TriangleCalculator.calculateBySideAndTwoAngles(side, angleA, angleB);
+                    const perimeter = side + result.side2 + result.side3;
+                    const area = TriangleCalculator.calculateArea(side, result.side2, result.side3);
+                    const type = TriangleCalculator.getTriangleType(side, result.side2, result.side3);
+
+                    resultHtml = `
+                        <div class="result-item">
+                            <span class="result-label">Третий угол:</span>
+                            <span class="result-value">${result.angle3.toFixed(1)}°</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Вторая сторона:</span>
+                            <span class="result-value">${result.side2.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Третья сторона:</span>
+                            <span class="result-value">${result.side3.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Периметр:</span>
+                            <span class="result-value">${perimeter.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Площадь:</span>
+                            <span class="result-value">${area.toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Тип:</span>
+                            <span class="result-value">${type}</span>
+                        </div>
+                    `;
+
+                } else if (activeMethod === 'checkExistence') {
+                    const sideA = parseFloat(document.getElementById('sideA3').value);
+                    const sideB = parseFloat(document.getElementById('sideB3').value);
+                    const sideC = parseFloat(document.getElementById('sideC3').value);
+
+                    if (!sideA || !sideB || !sideC) {
+                        showError("Заполните все поля");
+                        return;
+                    }
+
+                    const exists = TriangleCalculator.checkTriangleExistence(sideA, sideB, sideC);
+                    const type = TriangleCalculator.getTriangleType(sideA, sideB, sideC);
+                    const area = TriangleCalculator.calculateArea(sideA, sideB, sideC);
+                    const perimeter = sideA + sideB + sideC;
+
+                    if (exists) {
+                        resultHtml = `
+                            <div class="result-item" style="color: #27ae60;">
+                                <span class="result-label">Статус:</span>
+                                <span class="result-value">✅ Треугольник существует</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Тип:</span>
+                                <span class="result-value">${type}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Периметр:</span>
+                                <span class="result-value">${perimeter.toFixed(2)}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Площадь:</span>
+                                <span class="result-value">${area.toFixed(2)}</span>
+                            </div>
+                        `;
+                    } else {
+                        resultHtml = `
+                            <div class="result-item" style="color: #e74c3c;">
+                                <span class="result-label">Статус:</span>
+                                <span class="result-value">❌ Треугольник не существует</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Причина:</span>
+                                <span class="result-value">Нарушено неравенство треугольника</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                showResult(resultHtml);
+
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Обработчик кнопки "Поделиться результатом"
+        tg.MainButton.onClick(() => {
+            const resultText = document.getElementById('resultContent').innerText;
+            tg.sendData(JSON.stringify({
+                action: "share_result",
+                result: resultText
+            }));
+        });
+    </script>
+</body>
+</html>
