@@ -1,4 +1,34 @@
+version: '3.8'
+
 services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    labels:
+      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
+
+  letsencrypt:
+    image: nginxproxy/acme-companion
+    container_name: letsencrypt_companion
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    environment:
+      - DEFAULT_EMAIL=i_nevakshenov@mail.ru
+      - NGINX_PROXY_CONTAINER=nginx_proxy
+
   app:
     build: ./Server
     container_name: fastapi_app
@@ -7,35 +37,6 @@ services:
     environment:
       - VIRTUAL_HOST=calc.press
       - LETSENCRYPT_HOST=calc.press
-    networks:
-      - proxy
-
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: nginx_proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - certs:/etc/nginx/certs
-      - html:/usr/share/nginx/html
-      - vhost:/etc/nginx/vhost.d
-    networks:
-      - proxy
-
-  letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: letsencrypt_companion
-    depends_on:
-      - nginx-proxy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - certs:/etc/nginx/certs
-      - html:/usr/share/nginx/html
-      - vhost:/etc/nginx/vhost.d
-    environment:
-      - DEFAULT_EMAIL=i_nevakshenov@mail.ru
     networks:
       - proxy
 
