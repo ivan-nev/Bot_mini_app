@@ -14,6 +14,8 @@ services:
       - html:/usr/share/nginx/html
     labels:
       - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
+    networks:
+      - proxy
 
   letsencrypt:
     image: nginxproxy/acme-companion
@@ -28,6 +30,8 @@ services:
     environment:
       - DEFAULT_EMAIL=i_nevakshenov@mail.ru
       - NGINX_PROXY_CONTAINER=nginx_proxy
+    networks:
+      - proxy
 
   app:
     build: ./Server
