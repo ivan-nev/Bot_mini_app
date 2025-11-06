@@ -3,7 +3,7 @@ from config.config import load_config
 
 config = load_config()
 TOKEN = config.tg_bot.token
-WEB_APP_URL = "localhost:8000"
+WEB_APP_URL = "http://176.109.104.242:8000/"
 
 # Установка Menu Button
 url = f"https://api.telegram.org/bot{TOKEN}/setChatMenuButton"

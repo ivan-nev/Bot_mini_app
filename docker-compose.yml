@@ -3,5 +3,57 @@ version: '3.8'
 services:
   app:
     build: ./Server
+    container_name: fastapi_app
     ports:
       - "8000:8000"
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+      - ./certs:/etc/letsencrypt
+    depends_on:
+      - app
+    networks:
+      - backend
+
+  certbot:
+    image: certbot/certbot
+    command: >
+      certonly --webroot --webroot-path=/var/www/html
+              --email="${EMAIL}"
+              --agree-tos --no-eff-email
+              --force-renewal
+              -d calc.press -d www.calc.press
+    volumes:
+      - ./certbot-webroot:/var/www/html
+      - ./certs:/etc/letsencrypt
+    environment:
+      - EMAIL=i_nevakshenov@mail.ru
+    depends_on:
+      - nginx
+    networks:
+      - backend
+
+  cron:
+    image: alpine:latest
+    command: sh -c "while true; do sleep 12h & wait $${!}; certbot renew --dry-run || exit 1; done"
+    volumes:
+      - ./certs:/etc/letsencrypt
+    depends_on:
+      - nginx
+    networks:
+      - backend
+
+volumes:
+  certbot-webroot:
+
+networks:
+  backend:
+    driver: bridge
