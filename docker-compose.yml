@@ -1,59 +1,49 @@
-version: '3.8'
-
 services:
   app:
     build: ./Server
     container_name: fastapi_app
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
+    environment:
+      - VIRTUAL_HOST=calc.press
+      - LETSENCRYPT_HOST=calc.press
     networks:
-      - backend
+      - proxy
 
-  nginx:
-    image: nginx:alpine
+  nginx-proxy:
+    image: jwilder/nginx-proxy
     container_name: nginx_proxy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./config/nginx.conf:/etc/nginx/nginx.conf
-      - ./certs:/etc/letsencrypt
-    depends_on:
-      - app
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
     networks:
-      - backend
+      - proxy
 
-  certbot:
-    image: certbot/certbot
-    command: >
-      certonly --webroot --webroot-path=/var/www/html
-              --email="${EMAIL}"
-              --agree-tos --no-eff-email
-              --force-renewal
-              -d calc.press -d www.calc.press
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt_companion
+    depends_on:
+      - nginx-proxy
     volumes:
-      - ./certbot-webroot:/var/www/html
-      - ./certs:/etc/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
     environment:
-      - EMAIL=i_nevakshenov@mail.ru
-    depends_on:
-      - nginx
+      - DEFAULT_EMAIL=i_nevakshenov@mail.ru
     networks:
-      - backend
-
-  cron:
-    image: alpine:latest
-    command: sh -c "while true; do sleep 12h & wait $${!}; certbot renew --dry-run || exit 1; done"
-    volumes:
-      - ./certs:/etc/letsencrypt
-    depends_on:
-      - nginx
-    networks:
-      - backend
+      - proxy
 
 volumes:
-  certbot-webroot:
+  certs:
+  html:
+  vhost:
 
 networks:
-  backend:
+  proxy:
     driver: bridge
