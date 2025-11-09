@@ -4,6 +4,8 @@ services:
   vikunja:
     image: vikunja/vikunja
     container_name: vikunja_app
+    env_file:
+      - .env  # Явно указываем файл с переменными
     environment:
       # Обязательные настройки
       - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.calc.press
@@ -16,19 +18,16 @@ services:
       - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
 
-      # Дополнительные настройки (рекомендуемые)
+      # Дополнительные настройки
       - VIKUNJA_CORS_ENABLED=true
       - VIKUNJA_CACHE_ENABLED=true
     volumes:
-      # Добавляем volume для кэша
-      - vikunja_cache:/.cache
+      - vikunja_cache:/tmp/cache  # Используем /tmp вместо /.cache
     labels:
       - "traefik.enable=true"
-      # HTTP to HTTPS redirect
       - "traefik.http.routers.vikunja-http.entrypoints=web"
       - "traefik.http.routers.vikunja-http.rule=Host(`vikunja.calc.press`)"
       - "traefik.http.routers.vikunja-http.middlewares=redirect-to-https"
-      # HTTPS с SSL
       - "traefik.http.routers.vikunja.entrypoints=websecure"
       - "traefik.http.routers.vikunja.rule=Host(`vikunja.calc.press`)"
       - "traefik.http.routers.vikunja.tls.certresolver=le"
@@ -36,11 +35,14 @@ services:
     networks:
       - proxy-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # Ждем пока БД станет здоровой
 
   db:
     image: mariadb:10.11
     container_name: vikunja_db
+    env_file:
+      - .env  # Явно указываем файл с переменными
     environment:
       - MYSQL_ROOT_PASSWORD=${VIKUNJA_DB_ROOT_PASSWORD}
       - MYSQL_USER=${VIKUNJA_DB_USER}
@@ -50,6 +52,12 @@ services:
       - "3306:3306"
     volumes:
       - vikunja_db_data:/var/lib/mysql
+    healthcheck:  # Добавляем healthcheck для БД
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - proxy-network
 
