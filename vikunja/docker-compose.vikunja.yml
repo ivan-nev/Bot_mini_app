@@ -4,6 +4,14 @@ services:
   vikunja:
     image: vikunja/vikunja
     container_name: vikunja_app
+    environment:
+      # Передаем параметры БД в Vikunja
+      - VIKUNJA_DATABASE_HOST=db
+      - VIKUNJA_DATABASE_TYPE=mysql
+      - VIKUNJA_DATABASE_USER=${VIKUNJA_DB_USER}
+      - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
+      - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
+      - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_JWT_SECRET}
     labels:
       - "traefik.enable=true"
       # HTTP to HTTPS redirect
@@ -13,7 +21,7 @@ services:
       # HTTPS с SSL
       - "traefik.http.routers.vikunja.entrypoints=websecure"
       - "traefik.http.routers.vikunja.rule=Host(`vikunja.calc.press`)"
-      - "traefik.http.routers.vikunja.tls.certresolver=myresolver"
+      - "traefik.http.routers.vikunja.tls.certresolver=le"
       - "traefik.http.services.vikunja.loadbalancer.server.port=3456"
     networks:
       - proxy-network
@@ -24,10 +32,12 @@ services:
     image: mariadb:10.11
     container_name: vikunja_db
     environment:
-      - MYSQL_ROOT_PASSWORD=changeme
-      - MYSQL_USER=vikunja
-      - MYSQL_PASSWORD=changeme
-      - MYSQL_DATABASE=vikunja
+      - MYSQL_ROOT_PASSWORD=${VIKUNJA_DB_ROOT_PASSWORD}
+      - MYSQL_USER=${VIKUNJA_DB_USER}
+      - MYSQL_PASSWORD=${VIKUNJA_DB_PASSWORD}
+      - MYSQL_DATABASE=${VIKUNJA_DB_NAME}
+    ports:
+      - "3306:3306"
     volumes:
       - vikunja_db_data:/var/lib/mysql
     networks:
