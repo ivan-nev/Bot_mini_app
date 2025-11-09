@@ -1,0 +1,20 @@
+# docker-compose.app.yml
+version: '3.8'
+
+services:
+  app:
+    build: ./Server
+    container_name: fastapi_app
+    expose:
+      - "8000"
+    environment:
+      - VIRTUAL_HOST=mini_app.calc.press,calc.press
+      - LETSENCRYPT_HOST=mini_app.calc.press,calc.press
+      - VIRTUAL_PORT=8000
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
+    name: proxy_proxy-network

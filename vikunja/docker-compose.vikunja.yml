@@ -1,0 +1,42 @@
+# docker-compose.vikunja.yml
+version: '3.8'
+
+services:
+  vikunja:
+    image: vikunja/vikunja
+    container_name: vikunja_app
+    environment:
+      - VIRTUAL_HOST=vikunja.calc.press
+      - LETSENCRYPT_HOST=vikunja.calc.press
+      - VIRTUAL_PORT=3456  # ← ИЗМЕНИЛ на 3456
+      - VIKUNJA_DATABASE_HOST=db
+      - VIKUNJA_DATABASE_PASSWORD=changeme
+      - VIKUNJA_DATABASE_TYPE=mysql
+      - VIKUNJA_DATABASE_USER=vikunja
+      - VIKUNJA_DATABASE_DATABASE=vikunja
+      - VIKUNJA_SERVICE_JWTSECRET=your-super-secret-jwt-key-change-this
+    networks:
+      - proxy-network
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11
+    container_name: vikunja_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=changeme
+      - MYSQL_USER=vikunja
+      - MYSQL_PASSWORD=changeme
+      - MYSQL_DATABASE=vikunja
+    volumes:
+      - vikunja_db_data:/var/lib/mysql
+    networks:
+      - proxy-network
+
+volumes:
+  vikunja_db_data:
+
+networks:
+  proxy-network:
+    external: true
+    name: proxy_proxy-network
