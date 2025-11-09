@@ -42,3 +42,4 @@ volumes:
 networks:
   proxy-network:
     driver: bridge
+    name: proxy_proxy-network
