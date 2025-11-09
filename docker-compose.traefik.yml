@@ -14,14 +14,24 @@ services:
       - --certificatesresolvers.myresolver.acme.email=i_nevakshenov@mail.ru
       - --certificatesresolvers.myresolver.acme.storage=/acme.json
       - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
-      # Дополнительные настройки
-      - --certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory
+      # Dashboard с аутентификацией
+      - --api.insecure=false  # Отключаем небезопасный доступ
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_data:/acme.json
+    labels:
+      # Настройка dashboard через traefik itself
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.calc.press`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      # Middleware для базовой аутентификации
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$apr1$DAVd4sCM$bEY1D8YavYS3tsEySAsOf0"
     networks:
       - proxy-network
 
@@ -31,4 +41,4 @@ volumes:
 networks:
   proxy-network:
     driver: bridge
-    name: traefic_proxy-network
+    name: traefik_proxy-network
