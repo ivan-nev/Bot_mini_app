@@ -1,3 +1,4 @@
+# docker-compose.traefik.yml
 version: '3.8'
 
 services:
@@ -19,7 +20,7 @@ services:
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_acme:/acme.json  # Используем именованный volume
+      - ./traefik_data:/acme.json  # bind mount вместо volume
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.calc.press`)"
@@ -27,10 +28,6 @@ services:
       - "traefik.http.routers.dashboard.entrypoints=web"
     networks:
       - proxy-network
-
-volumes:
-  traefik_acme:  # Явно объявляем volume
-    driver: local
 
 networks:
   proxy-network:
