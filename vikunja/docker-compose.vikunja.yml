@@ -5,13 +5,23 @@ services:
     image: vikunja/vikunja
     container_name: vikunja_app
     environment:
-      # Передаем параметры БД в Vikunja
+      # Обязательные настройки
+      - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.calc.press
+      - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_JWT_SECRET}
+
+      # Настройки базы данных
       - VIKUNJA_DATABASE_HOST=db
       - VIKUNJA_DATABASE_TYPE=mysql
       - VIKUNJA_DATABASE_USER=${VIKUNJA_DB_USER}
       - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
-      - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_JWT_SECRET}
+
+      # Дополнительные настройки (рекомендуемые)
+      - VIKUNJA_CORS_ENABLED=true
+      - VIKUNJA_CACHE_ENABLED=true
+    volumes:
+      # Добавляем volume для кэша
+      - vikunja_cache:/.cache
     labels:
       - "traefik.enable=true"
       # HTTP to HTTPS redirect
@@ -45,6 +55,7 @@ services:
 
 volumes:
   vikunja_db_data:
+  vikunja_cache:
 
 networks:
   proxy-network:
