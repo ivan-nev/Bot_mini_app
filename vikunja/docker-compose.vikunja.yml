@@ -1,20 +1,20 @@
-# docker-compose.vikunja.yml
 version: '3.8'
 
 services:
   vikunja:
     image: vikunja/vikunja
     container_name: vikunja_app
-    environment:
-      - VIRTUAL_HOST=vikunja.calc.press
-      - LETSENCRYPT_HOST=vikunja.calc.press
-      - VIRTUAL_PORT=3456  # ← ИЗМЕНИЛ на 3456
-      - VIKUNJA_DATABASE_HOST=db
-      - VIKUNJA_DATABASE_PASSWORD=changeme
-      - VIKUNJA_DATABASE_TYPE=mysql
-      - VIKUNJA_DATABASE_USER=vikunja
-      - VIKUNJA_DATABASE_DATABASE=vikunja
-      - VIKUNJA_SERVICE_JWTSECRET=your-super-secret-jwt-key-change-this
+    labels:
+      - "traefik.enable=true"
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.vikunja-http.entrypoints=web"
+      - "traefik.http.routers.vikunja-http.rule=Host(`vikunja.calc.press`)"
+      - "traefik.http.routers.vikunja-http.middlewares=redirect-to-https"
+      # HTTPS с SSL
+      - "traefik.http.routers.vikunja.entrypoints=websecure"
+      - "traefik.http.routers.vikunja.rule=Host(`vikunja.calc.press`)"
+      - "traefik.http.routers.vikunja.tls.certresolver=myresolver"
+      - "traefik.http.services.vikunja.loadbalancer.server.port=3456"
     networks:
       - proxy-network
     depends_on:
@@ -39,4 +39,4 @@ volumes:
 networks:
   proxy-network:
     external: true
-    name: proxy_proxy-network
+    name: traefik_proxy-network
