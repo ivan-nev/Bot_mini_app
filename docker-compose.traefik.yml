@@ -10,9 +10,8 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      # Настройки Let's Encrypt
       - --certificatesresolvers.le.acme.email=i_nevakshenov@mail.ru
-      - --certificatesresolvers.le.acme.storage=/acme.json  # путь ВНУТРИ контейнера
+      - --certificatesresolvers.le.acme.storage=/acme.json
       - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
       - --api.insecure=false
     ports:
@@ -20,13 +19,21 @@ services:
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/acme.json:/acme.json  # маппинг файла с хоста в контейнер
+      - /var/acme.json:/acme.json
+      - ./traefik-users.txt:/etc/traefik/traefik-users.txt # Файл с кэшами паролей
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.calc.press`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls.certresolver=le"
+
+      # Добавляем middleware с аутентификацией
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.usersfile=/etc/traefik/traefik-users.txt"
+
+      # Дополнительно: добавляем security headers
+      - "traefik.http.middlewares.auth.basicauth.removeheader=true"
     networks:
       - proxy-network
 
