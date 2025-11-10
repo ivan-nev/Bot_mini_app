@@ -1,0 +1,27 @@
+# docker-compose.admin-panel.yml
+version: '3.8'
+
+services:
+  vikunja-admin:
+    image: roganovda/vikunja-admin-panel:latest
+    container_name: vikunja_admin_panel
+    environment:
+      - VITE_VIKUNJA_API_URL=https://vikunja.calc.press/api/v1
+      - VITE_VIKUNJA_FRONTEND_URL=https://vikunja.calc.press
+    labels:
+      - "traefik.enable=true"
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.vikunja-admin-http.entrypoints=web"
+      - "traefik.http.routers.vikunja-admin-http.rule=Host(`admin.calc.press`)"
+      - "traefik.http.routers.vikunja-admin-http.middlewares=redirect-to-https"
+      # HTTPS с SSL
+      - "traefik.http.routers.vikunja-admin.entrypoints=websecure"
+      - "traefik.http.routers.vikunja-admin.rule=Host(`admin.calc.press`)"
+      - "traefik.http.routers.vikunja-admin.tls.certresolver=le"
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
+    name: traefik_proxy-network
