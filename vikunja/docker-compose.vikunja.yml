@@ -1,4 +1,3 @@
-# Обновленный docker-compose.vikunja.yml
 version: '3.8'
 
 services:
@@ -7,7 +6,7 @@ services:
     container_name: vikunja_app
     user: "1001:1001"
     env_file:
-      - .env  # Явно указываем файл с переменными
+      - .env
     environment:
       # Обязательные настройки
       - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.calc.press
@@ -20,9 +19,9 @@ services:
       - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
 
-      # Настройки файлового хранилища
+      # Настройки файлового хранилища - ИСПРАВЛЕНО!
       - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
-      - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/data/files  # Используем /data вместо /app
+      - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/app/vikunja/files  # ← Оригинальный путь!
       - VIKUNJA_FILES_STORAGE_TYPE=local
 
       # Дополнительные настройки
@@ -30,7 +29,7 @@ services:
       - VIKUNJA_CACHE_ENABLED=true
     volumes:
       - vikunja_cache:/tmp/cache
-      - vikunja_files:/data/files  # Добавляем volume для файлов
+      - vikunja_files:/app/vikunja/files  # ← Соответствует пути выше!
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vikunja-http.entrypoints=web"
@@ -44,13 +43,13 @@ services:
       - proxy-network
     depends_on:
       db:
-        condition: service_healthy  # Ждем пока БД станет здоровой
+        condition: service_healthy
 
   db:
     image: mariadb:10.11
     container_name: vikunja_db
     env_file:
-      - .env  # Явно указываем файл с переменными
+      - .env
     environment:
       - MYSQL_ROOT_PASSWORD=${VIKUNJA_DB_ROOT_PASSWORD}
       - MYSQL_USER=${VIKUNJA_DB_USER}
@@ -60,7 +59,7 @@ services:
       - "3306:3306"
     volumes:
       - vikunja_db_data:/var/lib/mysql
-    healthcheck:  # Добавляем healthcheck для БД
+    healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
       interval: 10s
@@ -72,7 +71,7 @@ services:
 volumes:
   vikunja_db_data:
   vikunja_cache:
-  vikunja_files:  # Добавляем volume для файлов
+  vikunja_files:
 
 networks:
   proxy-network:
