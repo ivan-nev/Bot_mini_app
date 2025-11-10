@@ -5,6 +5,7 @@ services:
   vikunja:
     image: vikunja/vikunja
     container_name: vikunja_app
+    user: "1001:1001"
     env_file:
       - .env  # Явно указываем файл с переменными
     environment:
