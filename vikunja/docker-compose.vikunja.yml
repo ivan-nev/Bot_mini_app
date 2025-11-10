@@ -21,7 +21,7 @@ services:
 
       # Настройки файлового хранилища
       - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
-      - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/app/vikunja/files
+      - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/data/files  # Используем /data вместо /app
       - VIKUNJA_FILES_STORAGE_TYPE=local
 
       # Дополнительные настройки
@@ -29,7 +29,7 @@ services:
       - VIKUNJA_CACHE_ENABLED=true
     volumes:
       - vikunja_cache:/tmp/cache
-      - vikunja_files:/app/vikunja/files  # Добавляем volume для файлов
+      - vikunja_files:/data/files  # Добавляем volume для файлов
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vikunja-http.entrypoints=web"
