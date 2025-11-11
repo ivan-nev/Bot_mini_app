@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   vikunja:
     image: vikunja/vikunja
     container_name: vikunja_app
-    user: "1001:1001"
+    # Не указываем user - используем пользователя из образа
     env_file:
       - .env
     environment:
@@ -15,27 +13,9 @@ services:
       - VIKUNJA_DATABASE_USER=${VIKUNJA_DB_USER}
       - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
-
-      # S3 настройки
-#      - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
-#      - VIKUNJA_FILES_STORAGE_TYPE=s3
-#      - VIKUNJA_FILES_STORAGE_S3_ENDPOINT=storage.yandexcloud.net
-#      - VIKUNJA_FILES_STORAGE_S3_BUCKET=${YANDEX_S3_BUCKET}
-#      - VIKUNJA_FILES_STORAGE_S3_REGION=ru-central1
-#      - VIKUNJA_FILES_STORAGE_S3_ACCESSKEY=${YANDEX_S3_ACCESS_KEY}
-#      - VIKUNJA_FILES_STORAGE_S3_SECRETKEY=${YANDEX_S3_SECRET_KEY}
-#      - VIKUNJA_FILES_STORAGE_S3_SSL=true
-
-        # Используем локальное хранилище вместо S3 для тестирования
       - VIKUNJA_FILES_STORAGE_TYPE=local
       - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/app/vikunja/files
 
-
-      - VIKUNJA_CACHE_ENABLED=true
-      - VIKUNJA_CACHE_TYPE=memory
-      - VIKUNJA_CORS_ENABLED=true
-
-    # Монтируем временную директорию с правильными правами
     volumes:
       - vikunja_files:/app/vikunja/files
 
@@ -45,13 +25,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
-    command: >
-          sh -c "
-            mkdir -p /app/vikunja/files &&
-            chown -R 1001:1001 /app/vikunja/files &&
-            /app/vikunja/vikunja
-          "
 
     labels:
       - "traefik.enable=true"
