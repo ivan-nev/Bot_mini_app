@@ -1,3 +1,4 @@
+# docker-compose.vikunja.yml
 version: '3.8'
 
 services:
@@ -8,28 +9,28 @@ services:
     env_file:
       - .env
     environment:
-      # Обязательные настройки
       - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.calc.press
       - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_JWT_SECRET}
-
-      # Настройки базы данных
       - VIKUNJA_DATABASE_HOST=db
       - VIKUNJA_DATABASE_TYPE=mysql
       - VIKUNJA_DATABASE_USER=${VIKUNJA_DB_USER}
       - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
-
-      # Настройки файлового хранилища - ИСПРАВЛЕНО!
+      
+      # Яндекс Object Storage
       - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
-      - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/app/vikunja/files  # ← Оригинальный путь!
-      - VIKUNJA_FILES_STORAGE_TYPE=local
-
-      # Дополнительные настройки
+      - VIKUNJA_FILES_STORAGE_TYPE=s3
+      - VIKUNJA_FILES_STORAGE_S3_ENDPOINT=storage.yandexcloud.net
+      - VIKUNJA_FILES_STORAGE_S3_BUCKET=${YANDEX_S3_BUCKET}
+      - VIKUNJA_FILES_STORAGE_S3_REGION=ru-central1
+      - VIKUNJA_FILES_STORAGE_S3_ACCESSKEY=${YANDEX_S3_ACCESS_KEY}
+      - VIKUNJA_FILES_STORAGE_S3_SECRETKEY=${YANDEX_S3_SECRET_KEY}
+      - VIKUNJA_FILES_STORAGE_S3_SSL=true
+      
       - VIKUNJA_CORS_ENABLED=true
       - VIKUNJA_CACHE_ENABLED=true
     volumes:
       - vikunja_cache:/tmp/cache
-      - vikunja_files:/app/vikunja/files  # ← Соответствует пути выше!
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vikunja-http.entrypoints=web"
@@ -45,35 +46,4 @@ services:
       db:
         condition: service_healthy
 
-  db:
-    image: mariadb:10.11
-    container_name: vikunja_db
-    env_file:
-      - .env
-    environment:
-      - MYSQL_ROOT_PASSWORD=${VIKUNJA_DB_ROOT_PASSWORD}
-      - MYSQL_USER=${VIKUNJA_DB_USER}
-      - MYSQL_PASSWORD=${VIKUNJA_DB_PASSWORD}
-      - MYSQL_DATABASE=${VIKUNJA_DB_NAME}
-    ports:
-      - "3306:3306"
-    volumes:
-      - vikunja_db_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    networks:
-      - proxy-network
-
-volumes:
-  vikunja_db_data:
-  vikunja_cache:
-  vikunja_files:
-
-networks:
-  proxy-network:
-    external: true
-    name: traefik_proxy-network
+  # ... остальное без изменений
