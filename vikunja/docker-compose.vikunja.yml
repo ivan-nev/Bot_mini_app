@@ -4,7 +4,6 @@ services:
   vikunja:
     image: vikunja/vikunja
     container_name: vikunja_app
-    user: "root"
     env_file:
       - .env
     environment:
