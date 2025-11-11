@@ -1,4 +1,3 @@
-# docker-compose.vikunja.yml
 version: '3.8'
 
 services:
@@ -9,15 +8,18 @@ services:
     env_file:
       - .env
     environment:
+      # Основные настройки
       - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.calc.press
       - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_JWT_SECRET}
+
+      # База данных
       - VIKUNJA_DATABASE_HOST=db
       - VIKUNJA_DATABASE_TYPE=mysql
       - VIKUNJA_DATABASE_USER=${VIKUNJA_DB_USER}
       - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD}
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
-      
-      # Яндекс Object Storage
+
+      # ТОЛЬКО S3 ХРАНИЛИЩЕ - больше нет локальных путей!
       - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
       - VIKUNJA_FILES_STORAGE_TYPE=s3
       - VIKUNJA_FILES_STORAGE_S3_ENDPOINT=storage.yandexcloud.net
@@ -26,11 +28,16 @@ services:
       - VIKUNJA_FILES_STORAGE_S3_ACCESSKEY=${YANDEX_S3_ACCESS_KEY}
       - VIKUNJA_FILES_STORAGE_S3_SECRETKEY=${YANDEX_S3_SECRET_KEY}
       - VIKUNJA_FILES_STORAGE_S3_SSL=true
-      
+      - VIKUNJA_FILES_STORAGE_S3_FORCEPATHSTYLE=false
+
+      # Дополнительные настройки
       - VIKUNJA_CORS_ENABLED=true
       - VIKUNJA_CACHE_ENABLED=true
+
     volumes:
       - vikunja_cache:/tmp/cache
+      # НЕТ volume для файлов!
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vikunja-http.entrypoints=web"
@@ -40,6 +47,7 @@ services:
       - "traefik.http.routers.vikunja.rule=Host(`vikunja.calc.press`)"
       - "traefik.http.routers.vikunja.tls.certresolver=le"
       - "traefik.http.services.vikunja.loadbalancer.server.port=3456"
+
     networks:
       - proxy-network
     depends_on:
@@ -61,7 +69,7 @@ services:
     volumes:
       - vikunja_db_data:/var/lib/mysql
     healthcheck:
-      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
       interval: 10s
       timeout: 5s
@@ -72,7 +80,7 @@ services:
 volumes:
   vikunja_db_data:
   vikunja_cache:
-  vikunja_files:
+  # НЕТ vikunja_files!
 
 networks:
   proxy-network:
