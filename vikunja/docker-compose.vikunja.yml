@@ -27,8 +27,9 @@ services:
       - VIKUNJA_CORS_ENABLED=true
       - VIKUNJA_CACHE_ENABLED=true
     volumes:
-      - vikunja_cache:/tmp/cache
-      - vikunja_files:/app/vikunja/files  # ← Соответствует пути выше!
+#      - vikunja_files:/app/vikunja/files  # ← Соответствует пути выше!
+      - ./files:/app/vikunja/files:U,Z
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vikunja-http.entrypoints=web"
@@ -69,7 +70,6 @@ services:
 
 volumes:
   vikunja_db_data:
-  vikunja_cache:
   vikunja_files:
 
 networks:
