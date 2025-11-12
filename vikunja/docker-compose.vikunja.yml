@@ -26,8 +26,8 @@ services:
       - VIKUNJA_CORS_ENABLED=true
       - VIKUNJA_CACHE_ENABLED=true
     volumes:
-#      - vikunja_files:/app/vikunja/files  # ← Соответствует пути выше!
-      - ./files:/app/vikunja/files
+      - ~/vikunja_files:/app/vikunja/files  # ← Соответствует пути выше!
+#      - vikunja_files:/app/vikunja/files
 
     labels:
       - "traefik.enable=true"
