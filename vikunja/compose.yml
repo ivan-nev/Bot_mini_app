@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: changeme
       POSTGRES_USER: vikunja
     volumes:
-      - ./db:/var/lib/postgresql
+      - vikunja_db:/var/lib/postgresql
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER"]
@@ -31,3 +31,6 @@ services:
       start_period: 30s
     ports:
       - "5430:5432"
+
+volumes:
+  vikunja_db:
