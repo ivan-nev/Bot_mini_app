@@ -35,6 +35,12 @@ services:
       - "traefik.http.middlewares.auth.basicauth.usersfile=/etc/traefik/traefik-users.txt"
     networks:
       - proxy-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
 networks:
   proxy-network:

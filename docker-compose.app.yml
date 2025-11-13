@@ -19,6 +19,12 @@ services:
       - "traefik.http.services.app.loadbalancer.server.port=8000"
     networks:
       - proxy-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
 networks:
   proxy-network:
