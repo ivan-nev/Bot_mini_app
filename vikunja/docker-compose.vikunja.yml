@@ -19,8 +19,8 @@ services:
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
 
       # Настройки файлового хранилища - ИСПРАВЛЕНО!
-      - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
-      - VIKUNJA_FILES_STORAGE_TYPE=local
+#      - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
+#      - VIKUNJA_FILES_STORAGE_TYPE=local
 
       # Дополнительные настройки
       - VIKUNJA_CORS_ENABLED=true
@@ -38,6 +38,8 @@ services:
     volumes:
       - ~/vikunja_files:/app/vikunja/files
 #      - vikunja_files:/app/vikunja/files
+#      - /mnt/vikunja-files:/app/vikunja/files
+
 
     labels:
       - "traefik.enable=true"
