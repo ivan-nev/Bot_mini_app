@@ -17,6 +17,12 @@ services:
       - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
     networks:
       - proxy-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
   letsencrypt:
     image: nginxproxy/acme-companion
@@ -33,6 +39,12 @@ services:
       - NGINX_PROXY_CONTAINER=nginx_proxy
     networks:
       - proxy-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
 volumes:
   proxy_certs:
