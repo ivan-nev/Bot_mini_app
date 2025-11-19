@@ -7,8 +7,8 @@ services:
     env_file:
       - .env
     environment:
-      - PUID=1001
-      - PGID=1003
+#      - PUID=1001
+#      - PGID=1003
       # Обязательные настройки
       - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.calc.press
       - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_JWT_SECRET}
@@ -53,6 +53,7 @@ services:
 
     volumes:
       - ~/vikunja_files:/app/vikunja/files
+      - /tmp/vikunja_cache:/.cache
 #      - vikunja_files:/app/vikunja/files
 #      - /mnt/vikunja-files:/app/vikunja/files
 
