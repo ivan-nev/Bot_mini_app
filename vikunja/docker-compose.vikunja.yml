@@ -21,8 +21,9 @@ services:
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
 
       # Настройки файлового хранилища - ИСПРАВЛЕНО!
-#      - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
-#      - VIKUNJA_FILES_STORAGE_TYPE=local
+      - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
+      - VIKUNJA_FILES_STORAGE_TYPE=local
+      - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/app/vikunja/files
 
       # Дополнительные настройки
       - VIKUNJA_CORS_ENABLED=true
