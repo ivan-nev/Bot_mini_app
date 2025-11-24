@@ -162,10 +162,11 @@
         }
 
         .results-table td {
-            padding: 10px 8px;
+            padding: 12px 8px;
             text-align: center;
             border-bottom: 1px solid #e0e0e0;
             font-size: 13px;
+            vertical-align: middle;
         }
 
         .results-table tr:last-child td {
@@ -179,6 +180,19 @@
             font-weight: 500;
             color: #555;
             padding-left: 15px;
+            height: 100%;
+            min-height: 40px;
+        }
+
+        .parameter-name.two-lines {
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .parameter-name.two-lines .empty-line {
+            height: 14px;
+            visibility: hidden;
         }
 
         .icon {
@@ -505,8 +519,9 @@
             // Формируем HTML для таблицы
             const resultsHtml = `
                     <tr>
-                        <td class="parameter-name">
+                        <td class="parameter-name two-lines">
                             <span class="icon outer">⭕</span>Наружный
+                            <div class="empty-line">&nbsp;</div>
                         </td>
                         <td>
                             <div class="diameter-value">${formatNumber(nippleOuterMm, 3)}</div>
@@ -518,8 +533,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="parameter-name">
+                        <td class="parameter-name two-lines">
                             <span class="icon mean">🔩</span>Средний
+                            <div class="empty-line">&nbsp;</div>
                         </td>
                         <td>
                             <div class="diameter-value">${formatNumber(nippleMeanMm, 3)}</div>
@@ -531,8 +547,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="parameter-name">
+                        <td class="parameter-name two-lines">
                             <span class="icon inner">🕳️</span>Внутренний
+                            <div class="empty-line">&nbsp;</div>
                         </td>
                         <td>
                             <div class="diameter-value">${formatNumber(nippleInnerMm, 3)}</div>
@@ -544,8 +561,9 @@
                         </td>
                     </tr>
                     <tr class="height-row">
-                        <td class="parameter-name">
+                        <td class="parameter-name two-lines">
                             <span class="icon height">📐</span>Высота профиля
+                            <div class="empty-line">&nbsp;</div>
                         </td>
                         <td colspan="2">
                             <div class="height-value">${threadHeight.value} мм</div>
