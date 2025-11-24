@@ -10,6 +10,10 @@ templates = Jinja2Templates(directory='Server/templates')
 async def root(request: Request):
     return templates.TemplateResponse("triangl_calc.html", {"request": request})
 
+@app.get("/stub_acme_calc")
+async def stub_acme_calc(request:Request):
+    return templates.TemplateResponse("Stub_acme_calc.html", {"request": request})
+
 
 @app.get("/hello/{name}")
 async def say_hello(name: str):
