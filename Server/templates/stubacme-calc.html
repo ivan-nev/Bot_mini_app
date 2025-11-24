@@ -134,7 +134,6 @@
 
         .results-container {
             display: none;
-            gap: 15px;
         }
 
         .results-container.active {
@@ -142,75 +141,57 @@
             animation: fadeIn 0.5s ease;
         }
 
-        .result-section {
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
             background: #f8f9fa;
             border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .result-section h3 {
-            color: #333;
-            margin-bottom: 12px;
+        .results-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px 8px;
             text-align: center;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e0e0;
-            font-size: 16px;
-        }
-
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .result-label {
-            display: flex;
-            align-items: center;
-            color: #555;
             font-size: 13px;
-            font-weight: 500;
-        }
-
-        .icon {
-            margin-right: 6px;
-            font-size: 14px;
-        }
-
-        .icon.outer {
-            color: #3498db;
-        }
-
-        .icon.mean {
-            color: #9b59b6;
-        }
-
-        .icon.inner {
-            color: #e74c3c;
-        }
-
-        .icon.height {
-            color: #27ae60;
-        }
-
-        .result-value {
-            color: #333;
             font-weight: 600;
-            text-align: right;
+        }
+
+        .results-table th:first-child {
+            background: #5a6fd8;
+            text-align: left;
+            padding-left: 15px;
+        }
+
+        .results-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
             font-size: 13px;
+        }
+
+        .results-table td:first-child {
+            text-align: left;
+            padding-left: 15px;
+            font-weight: 500;
+            color: #555;
+            background: #f0f2f5;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .diameter-value {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
         }
 
         .deviation {
             font-size: 11px;
-            margin-top: 2px;
         }
 
         .deviation.negative {
@@ -221,9 +202,17 @@
             color: #27ae60;
         }
 
-        .height-section {
-            background: #f0f8f0;
-            border-left: 3px solid #27ae60;
+        .height-row {
+            background: #f0f8f0 !important;
+        }
+
+        .height-row td:first-child {
+            background: #e8f5e8 !important;
+        }
+
+        .height-value {
+            font-weight: 600;
+            color: #27ae60;
         }
 
         .error {
@@ -284,18 +273,18 @@
     <div class="error" id="errorMessage"></div>
 
     <div class="results-container" id="results">
-        <div class="result-section">
-            <h3>🔩 Ниппель (мм)</h3>
-            <div id="nippleResults"></div>
-        </div>
-        <div class="result-section">
-            <h3>🔧 Муфта (мм)</h3>
-            <div id="couplingResults"></div>
-        </div>
-        <div class="result-section height-section">
-            <h3>📏 Высота профиля резьбы</h3>
-            <div id="heightResults"></div>
-        </div>
+        <table class="results-table">
+            <thead>
+            <tr>
+                <th>Параметр</th>
+                <th>Ниппель (мм)</th>
+                <th>Муфта (мм)</th>
+            </tr>
+            </thead>
+            <tbody id="resultsBody">
+            <!-- Результаты будут здесь -->
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -493,90 +482,51 @@
             // Расчет высоты профиля
             const threadHeight = StubAcmeCalculator.calculateThreadHeight(pitch);
 
-            // Формируем HTML для ниппеля (минусовые допуски)
-            const nippleHtml = `
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon outer">⭕</span>Наружный:
-                        </span>
-                        <div class="result-value">
-                            ${formatNumber(nippleOuterMm, 3)}
+            // Формируем HTML для таблицы
+            const resultsHtml = `
+                    <tr>
+                        <td>Наружный</td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(nippleOuterMm, 3)}</div>
                             <div class="deviation negative">-${nippleOuterDeviation}</div>
-                        </div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon mean">📊</span>Средний:
-                        </span>
-                        <div class="result-value">
-                            ${formatNumber(nippleMeanMm, 3)}
-                            <div class="deviation negative">-${nippleMeanDeviation}</div>
-                        </div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon inner">🕳️</span>Внутренний:
-                        </span>
-                        <div class="result-value">
-                            ${formatNumber(nippleInnerMm, 3)}
-                            <div class="deviation negative">-${nippleInnerDeviation}</div>
-                        </div>
-                    </div>
-                `;
-
-            // Формируем HTML для муфты (плюсовые допуски)
-            const couplingHtml = `
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon outer">⭕</span>Наружный:
-                        </span>
-                        <div class="result-value">
-                            ${formatNumber(couplingOuterMm, 3)}
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(couplingOuterMm, 3)}</div>
                             <div class="deviation positive">+${couplingOuterDeviation}</div>
-                        </div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon mean">📊</span>Средний:
-                        </span>
-                        <div class="result-value">
-                            ${formatNumber(couplingMeanMm, 3)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Средний</td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(nippleMeanMm, 3)}</div>
+                            <div class="deviation negative">-${nippleMeanDeviation}</div>
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(couplingMeanMm, 3)}</div>
                             <div class="deviation positive">+${couplingMeanDeviation}</div>
-                        </div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon inner">🕳️</span>Внутренний:
-                        </span>
-                        <div class="result-value">
-                            ${formatNumber(couplingInnerMm, 3)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Внутренний</td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(nippleInnerMm, 3)}</div>
+                            <div class="deviation negative">-${nippleInnerDeviation}</div>
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(couplingInnerMm, 3)}</div>
                             <div class="deviation positive">+${couplingInnerDeviation}</div>
-                        </div>
-                    </div>
-                `;
-
-            // Формируем HTML для высоты профиля
-            const heightHtml = `
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon height">📐</span>Расчетная высота:
-                        </span>
-                        <div class="result-value">
-                            ${threadHeight.value} мм
+                        </td>
+                    </tr>
+                    <tr class="height-row">
+                        <td>Высота профиля<br><small>(${Math.round(pitch)} ниток/дюйм)</small></td>
+                        <td colspan="2">
+                            <div class="height-value">${threadHeight.value} мм</div>
                             <div class="deviation positive">+${threadHeight.deviation}</div>
-                        </div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">
-                            <span class="icon height">🔢</span>Для шага:
-                        </span>
-                        <div class="result-value">${Math.round(pitch)} ниток/дюйм</div>
-                    </div>
+                        </td>
+                    </tr>
                 `;
 
-            document.getElementById('nippleResults').innerHTML = nippleHtml;
-            document.getElementById('couplingResults').innerHTML = couplingHtml;
-            document.getElementById('heightResults').innerHTML = heightHtml;
+            document.getElementById('resultsBody').innerHTML = resultsHtml;
             showResults();
 
         } catch (error) {
@@ -586,15 +536,11 @@
 
     // Обработчик кнопки "Поделиться результатом"
     tg.MainButton.onClick(() => {
-        const nippleText = document.getElementById('nippleResults').innerText;
-        const couplingText = document.getElementById('couplingResults').innerText;
-        const heightText = document.getElementById('heightResults').innerText;
+        const resultsText = document.getElementById('resultsBody').innerText;
         tg.sendData(JSON.stringify({
             action: "share_stub_acme_result",
             tolerance: document.querySelector('.tolerance-btn.active').dataset.tolerance,
-            nipple: nippleText,
-            coupling: couplingText,
-            height: heightText
+            results: resultsText
         }));
     });
 
