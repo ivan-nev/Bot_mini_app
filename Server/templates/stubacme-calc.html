@@ -49,10 +49,11 @@
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 20px;
+            align-items: end;
         }
 
         .input-field {
-            margin-bottom: 12px;
+            margin-bottom: 0;
         }
 
         .input-field label {
@@ -61,6 +62,7 @@
             color: #333;
             font-size: 13px;
             font-weight: 500;
+            white-space: nowrap;
         }
 
         .input-field input {
@@ -159,12 +161,6 @@
             font-weight: 600;
         }
 
-        .results-table th:first-child {
-            background: #5a6fd8;
-            text-align: left;
-            padding-left: 15px;
-        }
-
         .results-table td {
             padding: 10px 8px;
             text-align: center;
@@ -172,16 +168,38 @@
             font-size: 13px;
         }
 
-        .results-table td:first-child {
-            text-align: left;
-            padding-left: 15px;
-            font-weight: 500;
-            color: #555;
-            background: #f0f2f5;
-        }
-
         .results-table tr:last-child td {
             border-bottom: none;
+        }
+
+        .parameter-name {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            font-weight: 500;
+            color: #555;
+            padding-left: 15px;
+        }
+
+        .icon {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        .icon.outer {
+            color: #3498db;
+        }
+
+        .icon.mean {
+            color: #9b59b6;
+        }
+
+        .icon.inner {
+            color: #e74c3c;
+        }
+
+        .icon.height {
+            color: #27ae60;
         }
 
         .diameter-value {
@@ -206,13 +224,15 @@
             background: #f0f8f0 !important;
         }
 
-        .height-row td:first-child {
-            background: #e8f5e8 !important;
-        }
-
         .height-value {
             font-weight: 600;
             color: #27ae60;
+        }
+
+        .pitch-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
         }
 
         .error {
@@ -248,12 +268,12 @@
 
     <div class="input-group">
         <div class="input-field">
-            <label>Диаметр резьбы (d), дюймы</label>
-            <input type="number" id="diameter" placeholder="Например: 2.157" step="any" min="0">
+            <label>Диаметр (d), дюймы</label>
+            <input type="number" id="diameter" placeholder="2.157" step="any" min="0">
         </div>
         <div class="input-field">
-            <label>Шаг (ниток на дюйм)</label>
-            <input type="number" id="pitch" placeholder="Например: 8" step="any" min="0">
+            <label>Шаг (ниток/дюйм)</label>
+            <input type="number" id="pitch" placeholder="8" step="any" min="0">
         </div>
     </div>
 
@@ -485,7 +505,9 @@
             // Формируем HTML для таблицы
             const resultsHtml = `
                     <tr>
-                        <td>Наружный</td>
+                        <td class="parameter-name">
+                            <span class="icon outer">⭕</span>Наружный
+                        </td>
                         <td>
                             <div class="diameter-value">${formatNumber(nippleOuterMm, 3)}</div>
                             <div class="deviation negative">-${nippleOuterDeviation}</div>
@@ -496,7 +518,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Средний</td>
+                        <td class="parameter-name">
+                            <span class="icon mean">🔩</span>Средний
+                        </td>
                         <td>
                             <div class="diameter-value">${formatNumber(nippleMeanMm, 3)}</div>
                             <div class="deviation negative">-${nippleMeanDeviation}</div>
@@ -507,7 +531,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Внутренний</td>
+                        <td class="parameter-name">
+                            <span class="icon inner">🕳️</span>Внутренний
+                        </td>
                         <td>
                             <div class="diameter-value">${formatNumber(nippleInnerMm, 3)}</div>
                             <div class="deviation negative">-${nippleInnerDeviation}</div>
@@ -518,10 +544,13 @@
                         </td>
                     </tr>
                     <tr class="height-row">
-                        <td>Высота профиля<br><small>(${Math.round(pitch)} ниток/дюйм)</small></td>
+                        <td class="parameter-name">
+                            <span class="icon height">📐</span>Высота профиля
+                        </td>
                         <td colspan="2">
                             <div class="height-value">${threadHeight.value} мм</div>
                             <div class="deviation positive">+${threadHeight.deviation}</div>
+                            <div class="pitch-info">${Math.round(pitch)} ниток/дюйм</div>
                         </td>
                     </tr>
                 `;
