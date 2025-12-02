@@ -15,9 +15,9 @@ async def root(request: Request):
 async def stub_acme_calc(request:Request):
     return templates.TemplateResponse("stubacme-calc.html", {"request": request})
 
-@app.get("/metric_calc")
+@app.get("/metric-calc")
 async def metric_calc(request:Request):
-    return templates.TemplateResponse("metric_calc.html", {"request": request})
+    return templates.TemplateResponse("metric-calc.html", {"request": request})
 
 
 
