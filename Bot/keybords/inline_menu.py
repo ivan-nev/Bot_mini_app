@@ -3,7 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 LEXICON_BUTTON = {
     'StubACME': "https://miniapp.calc.press/stubacme-calc",
-    'Метрическая': 'https://miniapp.calc.press/metric-calc'
+    'Метрическая': "https://miniapp.calc.press/metric-calc"
 }
 
 

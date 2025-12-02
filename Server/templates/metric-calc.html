@@ -624,16 +624,61 @@
 
     // Обработчик кнопки "Поделиться результатом"
     tg.MainButton.onClick(() => {
-        const resultsText = document.getElementById('resultsBody').innerText;
+        // Собираем структурированные данные
+        const diameter = document.getElementById('diameter').value;
+        const pitch = document.getElementById('pitch').value;
         const internalTol = document.getElementById('internalTolerance').value;
         const externalTol = document.getElementById('externalTolerance').value;
 
-        tg.sendData(JSON.stringify({
+        // Собираем результаты в структурированном виде
+        const rows = document.querySelectorAll('#resultsBody tr');
+        const results = [];
+
+        rows.forEach(row => {
+            const paramElement = row.querySelector('.parameter-name');
+            const paramText = paramElement ?
+                    paramElement.textContent.replace(/[⭕🔩🕳️]/g, '').trim() : '';
+
+            const nutCell = row.cells[1];
+            const boltCell = row.cells[2];
+
+            const nutValue = nutCell.querySelector('.diameter-value')?.textContent || '';
+            const boltValue = boltCell.querySelector('.diameter-value')?.textContent || '';
+
+            // Собираем отклонения
+            const nutDeviations = [];
+            const boltDeviations = [];
+
+            nutCell.querySelectorAll('.deviation-upper, .deviation-lower')
+                    .forEach(el => nutDeviations.push(el.textContent));
+            boltCell.querySelectorAll('.deviation-upper, .deviation-lower')
+                    .forEach(el => boltDeviations.push(el.textContent));
+
+            results.push({
+                parameter: paramText,
+                nut: {
+                    value: nutValue,
+                    deviations: nutDeviations
+                },
+                bolt: {
+                    value: boltValue,
+                    deviations: boltDeviations
+                }
+            });
+        });
+
+        const data = {
             action: "share_metric_result",
+            diameter: diameter,
+            pitch: pitch,
             internalTolerance: internalTol,
             externalTolerance: externalTol,
-            results: resultsText
-        }));
+            results: results,
+            raw_text: document.getElementById('resultsBody').innerText,
+            timestamp: new Date().toISOString()
+        };
+
+        tg.sendData(JSON.stringify(data));
     });
 
     // Автозаполнение тестовыми данными для демонстрации
