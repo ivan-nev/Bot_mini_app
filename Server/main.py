@@ -1,11 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 templates = Jinja2Templates(directory='Server/templates')
 
-
+# app.mount("Server/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("triangl_calc.html", {"request": request})
@@ -13,6 +14,11 @@ async def root(request: Request):
 @app.get("/stubacme-calc")
 async def stub_acme_calc(request:Request):
     return templates.TemplateResponse("stubacme-calc.html", {"request": request})
+
+@app.get("/metric_calc")
+async def metric_calc(request:Request):
+    return templates.TemplateResponse("metric_calc.html", {"request": request})
+
 
 
 @app.get("/hello/{name}")

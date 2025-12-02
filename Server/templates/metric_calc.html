@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор метрической резьбы</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: end;
+        }
+
+        .input-field {
+            margin-bottom: 0;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .tolerance-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tolerance-field {
+            margin-bottom: 0;
+        }
+
+        .tolerance-field label {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .tolerance-field select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .tolerance-field select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .results-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .parameter-name {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            font-weight: 500;
+            color: #555;
+            padding-left: 15px;
+            height: 100%;
+            min-height: 40px;
+        }
+
+        .icon {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        .icon.outer {
+            color: #3498db;
+        }
+
+        .icon.mean {
+            color: #9b59b6;
+        }
+
+        .icon.inner {
+            color: #e74c3c;
+        }
+
+        .diameter-value {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .deviation-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .deviation-upper {
+            font-size: 11px;
+            color: #27ae60;
+        }
+
+        .deviation-lower {
+            font-size: 11px;
+            color: #e74c3c;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 12px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔧 Калькулятор метрической резьбы</h1>
+        <p>Введите параметры резьбы и выберите поля допусков</p>
+    </div>
+
+    <div class="input-group">
+        <div class="input-field">
+            <label>Наружный диаметр, мм</label>
+            <input type="number" id="diameter" placeholder="10" step="any" min="0">
+        </div>
+        <div class="input-field">
+            <label>Шаг, мм</label>
+            <input type="number" id="pitch" placeholder="1.5" step="any" min="0">
+        </div>
+    </div>
+
+    <div class="tolerance-group">
+        <div class="tolerance-field">
+            <label>Допуск муфты (внутренняя)</label>
+            <select id="internalTolerance">
+                <option value="6H">6H - Точный</option>
+                <option value="7H">7H - Средний</option>
+                <option value="8H">8H - Грубый</option>
+            </select>
+        </div>
+        <div class="tolerance-field">
+            <label>Допуск ниппеля (наружная)</label>
+            <select id="externalTolerance">
+                <option value="6e">6e - Точный большой зазор</option>
+                <option value="6f">6f - Точный средний зазор</option>
+                <option value="6g">6g - Точный малый зазор</option>
+                <option value="7e">7e - Средний большой зазор</option>
+                <option value="7f">7f - Средний средний зазор</option>
+                <option value="7g">7g - Средний малый зазор</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="calculate-btn" onclick="calculateMetric()">Рассчитать</button>
+
+    <div class="error" id="errorMessage"></div>
+
+    <div class="results-container" id="results">
+        <table class="results-table">
+            <thead>
+            <tr>
+                <th>Параметр</th>
+                <th>Муфта (мм)</th>
+                <th>Ниппель (мм)</th>
+            </tr>
+            </thead>
+            <tbody id="resultsBody">
+            <!-- Результаты будут здесь -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Данные из таблицы "степень точности резьбы.xlsx"
+    const toleranceTable = [
+        {
+            range: "5.6-11.2",
+            minD: 5.6,
+            maxD: 11.2,
+            pitches: [
+                {pitch: 0.25, tolerances: {3: 32, 4: 40, 5: 50, 6: 63, 7: 80, 8: null, 9: null, 10: null}},
+                {pitch: 0.35, tolerances: {3: 36, 4: 45, 5: 56, 6: 71, 7: 90, 8: null, 9: null, 10: null}},
+                {pitch: 0.5, tolerances: {3: 42, 4: 53, 5: 67, 6: 85, 7: 106, 8: 132, 9: null, 10: null}},
+                {pitch: 0.75, tolerances: {3: 50, 4: 63, 5: 80, 6: 100, 7: 125, 8: 160, 9: null, 10: null}},
+                {pitch: 1, tolerances: {3: 56, 4: 71, 5: 90, 6: 112, 7: 140, 8: 180, 9: 224, 10: 280}},
+                {pitch: 1.25, tolerances: {3: 60, 4: 75, 5: 95, 6: 118, 7: 150, 8: 190, 9: 236, 10: 300}},
+                {pitch: 1.5, tolerances: {3: 67, 4: 85, 5: 106, 6: 132, 7: 170, 8: 212, 9: 265, 10: 335}}
+            ]
+        },
+        {
+            range: "11.2-22.4",
+            minD: 11.2,
+            maxD: 22.4,
+            pitches: [
+                {pitch: 0.35, tolerances: {3: 38, 4: 48, 5: 60, 6: 75, 7: 95, 8: null, 9: null, 10: null}},
+                {pitch: 0.5, tolerances: {3: 45, 4: 56, 5: 71, 6: 90, 7: 112, 8: 140, 9: null, 10: null}},
+                {pitch: 0.75, tolerances: {3: 53, 4: 67, 5: 85, 6: 106, 7: 132, 8: 170, 9: null, 10: null}},
+                {pitch: 1, tolerances: {3: 60, 4: 75, 5: 95, 6: 118, 7: 150, 8: 190, 9: 236, 10: 300}},
+                {pitch: 1.25, tolerances: {3: 67, 4: 85, 5: 106, 6: 132, 7: 170, 8: 212, 9: 265, 10: 335}},
+                {pitch: 1.5, tolerances: {3: 71, 4: 90, 5: 112, 6: 140, 7: 180, 8: 224, 9: 280, 10: 355}},
+                {pitch: 1.75, tolerances: {3: 75, 4: 95, 5: 118, 6: 150, 7: 190, 8: 236, 9: 300, 10: 375}},
+                {pitch: 2, tolerances: {3: 80, 4: 100, 5: 125, 6: 160, 7: 200, 8: 250, 9: 315, 10: 400}},
+                {pitch: 2.5, tolerances: {3: 85, 4: 106, 5: 132, 6: 170, 7: 212, 8: 265, 9: 335, 10: 425}}
+            ]
+        },
+        {
+            range: "22.4-45",
+            minD: 22.4,
+            maxD: 45,
+            pitches: [
+                {pitch: 0.5, tolerances: {3: 48, 4: 60, 5: 75, 6: 95, 7: 118, 8: null, 9: null, 10: null}},
+                {pitch: 0.75, tolerances: {3: 56, 4: 71, 5: 90, 6: 112, 7: 140, 8: 180, 9: null, 10: null}},
+                {pitch: 1, tolerances: {3: 63, 4: 80, 5: 100, 6: 125, 7: 160, 8: 200, 9: 250, 10: 315}},
+                {pitch: 1.5, tolerances: {3: 75, 4: 95, 5: 118, 6: 150, 7: 190, 8: 236, 9: 300, 10: 375}},
+                {pitch: 2, tolerances: {3: 85, 4: 106, 5: 132, 6: 170, 7: 212, 8: 265, 9: 335, 10: 425}},
+                {pitch: 3, tolerances: {3: 100, 4: 125, 5: 160, 6: 200, 7: 250, 8: 315, 9: 400, 10: 500}},
+                {pitch: 3.5, tolerances: {3: 100, 4: 132, 5: 170, 6: 212, 7: 265, 8: 335, 9: 425, 10: 530}},
+                {pitch: 4, tolerances: {3: 110, 4: 140, 5: 180, 6: 224, 7: 280, 8: 355, 9: 450, 10: 560}},
+                {pitch: 4.5, tolerances: {3: 110, 4: 150, 5: 190, 6: 236, 7: 300, 8: 375, 9: 475, 10: 600}}
+            ]
+        },
+        {
+            range: "45-90",
+            minD: 45,
+            maxD: 90,
+            pitches: [
+                {pitch: 0.5, tolerances: {3: 50, 4: 63, 5: 80, 6: 100, 7: 125, 8: null, 9: null, 10: null}},
+                {pitch: 0.75, tolerances: {3: 60, 4: 75, 5: 95, 6: 118, 7: 150, 8: null, 9: null, 10: null}},
+                {pitch: 1, tolerances: {3: 71, 4: 90, 5: 112, 6: 140, 7: 180, 8: 224, 9: 280, 10: 355}},
+                {pitch: 1.5, tolerances: {3: 80, 4: 100, 5: 125, 6: 160, 7: 200, 8: 250, 9: 315, 10: 400}},
+                {pitch: 2, tolerances: {3: 90, 4: 112, 5: 140, 6: 180, 7: 224, 8: 280, 9: 355, 10: 450}},
+                {pitch: 3, tolerances: {3: 106, 4: 132, 5: 170, 6: 212, 7: 265, 8: 335, 9: 425, 10: 530}},
+                {pitch: 4, tolerances: {3: 118, 4: 150, 5: 190, 6: 236, 7: 300, 8: 375, 9: 475, 10: 600}},
+                {pitch: 5, tolerances: {3: 125, 4: 160, 5: 200, 6: 250, 7: 315, 8: 400, 9: 500, 10: 630}},
+                {pitch: 5.5, tolerances: {3: 132, 4: 170, 5: 212, 6: 265, 7: 335, 8: 425, 9: 530, 10: 670}},
+                {pitch: 6, tolerances: {3: 140, 4: 180, 5: 224, 6: 280, 7: 355, 8: 450, 9: 560, 10: 710}}
+            ]
+        },
+        {
+            range: "90-180",
+            minD: 90,
+            maxD: 180,
+            pitches: [
+                {pitch: 0.75, tolerances: {3: 63, 4: 80, 5: 100, 6: 125, 7: 160, 8: null, 9: null, 10: null}},
+                {pitch: 1, tolerances: {3: 75, 4: 95, 5: 118, 6: 150, 7: 190, 8: null, 9: null, 10: null}},
+                {pitch: 1.5, tolerances: {3: 85, 4: 106, 5: 132, 6: 170, 7: 212, 8: 265, 9: 335, 10: 425}},
+                {pitch: 2, tolerances: {3: 95, 4: 118, 5: 150, 6: 190, 7: 236, 8: 300, 9: 375, 10: 475}},
+                {pitch: 3, tolerances: {3: 112, 4: 140, 5: 180, 6: 224, 7: 280, 8: 355, 9: 450, 10: 560}},
+                {pitch: 4, tolerances: {3: 125, 4: 160, 5: 200, 6: 250, 7: 315, 8: 400, 9: 500, 10: 630}},
+                {pitch: 6, tolerances: {3: 150, 4: 190, 5: 236, 6: 300, 7: 375, 8: 475, 9: 600, 10: 750}},
+                {pitch: 8, tolerances: {3: 170, 4: 212, 5: 265, 6: 335, 7: 425, 8: 530, 9: 670, 10: 850}}
+            ]
+        }
+    ];
+
+    // Данные из таблицы "основное отклонение.xlsx"
+    const deviationTable = [
+        {pitch: 0.2, e: null, f: -32, g: -17},
+        {pitch: 0.25, e: null, f: -33, g: -18},
+        {pitch: 0.3, e: null, f: -33, g: -18},
+        {pitch: 0.35, e: null, f: -34, g: -19},
+        {pitch: 0.4, e: null, f: -34, g: -19},
+        {pitch: 0.45, e: null, f: -35, g: -20},
+        {pitch: 0.5, e: -50, f: -36, g: -20},
+        {pitch: 0.6, e: -53, f: -36, g: -21},
+        {pitch: 0.7, e: -56, f: -38, g: -22},
+        {pitch: 0.75, e: -56, f: -38, g: -22},
+        {pitch: 0.8, e: -60, f: -38, g: -24},
+        {pitch: 1, e: -60, f: -40, g: -26},
+        {pitch: 1.25, e: -63, f: -42, g: -28},
+        {pitch: 1.5, e: -67, f: -45, g: -32},
+        {pitch: 1.75, e: -71, f: -48, g: -34},
+        {pitch: 2, e: -71, f: -52, g: -38},
+        {pitch: 2.5, e: -80, f: -58, g: -42},
+        {pitch: 3, e: -85, f: -63, g: -48},
+        {pitch: 3.5, e: -90, f: -70, g: -53},
+        {pitch: 4, e: -95, f: -75, g: -60},
+        {pitch: 4.5, e: -100, f: -80, g: -63},
+        {pitch: 5, e: -106, f: -85, g: -71},
+        {pitch: 5.5, e: -112, f: -90, g: -75},
+        {pitch: 6, e: -118, f: -95, g: -80},
+        {pitch: 8, e: -140, f: -118, g: -100}
+    ];
+
+    class MetricThreadCalculator {
+        // Основные размеры по ГОСТ 24705-2004
+        static getBasicDimensions(d, P) {
+            const D = d;  // Наружный диаметр
+            const D2 = d - 0.6495 * P;  // Средний диаметр
+            const D1 = d - 1.0825 * P;  // Внутренний диаметр
+
+            return {D, D2, D1};
+        }
+
+        // Поиск допуска по таблице
+        static findTolerance(diameter, pitch, grade) {
+            for (const range of toleranceTable) {
+                if (diameter > range.minD && diameter <= range.maxD) {
+                    for (const pitchData of range.pitches) {
+                        if (Math.abs(pitchData.pitch - pitch) < 0.01) {
+                            return pitchData.tolerances[grade] / 1000; // Конвертация в мм
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Поиск основного отклонения по таблице
+        static findDeviation(pitch, field) {
+            for (const row of deviationTable) {
+                if (Math.abs(row.pitch - pitch) < 0.01) {
+                    return row[field] / 1000; // Конвертация в мм
+                }
+            }
+            return null;
+        }
+
+        // Расчет допусков по ГОСТ 16093-2004
+        static getTolerances(d, P, internalTol, externalTol) {
+            const basic = this.getBasicDimensions(d, P);
+
+            // Извлечение степени точности из полей допусков
+            const internalGrade = parseInt(internalTol);
+            const externalGrade = parseInt(externalTol);
+            const externalField = externalTol.replace(externalGrade, '');
+
+            // Поиск допусков и отклонений
+            const TD2 = this.findTolerance(d, P, internalGrade); // Допуск среднего диаметра внутренней резьбы
+            const Td2 = this.findTolerance(d, P, externalGrade); // Допуск среднего диаметра наружной резьбы
+            const es = this.findDeviation(P, externalField);     // Основное отклонение наружной резьбы
+
+            if (TD2 === null || Td2 === null || es === null) {
+                throw new Error("Не удалось найти данные для расчета. Проверьте правильность введенных параметров.");
+            }
+
+            // Внутренняя резьба (муфта) - допуск внутреннего диаметра равен допуску среднего диаметра
+            const internal = {
+                outer: {
+                    nominal: basic.D,
+                    upper: 0,
+                    lower: 0
+                },
+                mean: {
+                    nominal: basic.D2,
+                    upper: TD2,
+                    lower: 0
+                },
+                inner: {
+                    nominal: basic.D1,
+                    upper: TD2,  // TD1 = TD2
+                    lower: 0
+                }
+            };
+
+            // Наружная резьба (ниппель)
+            const external = {
+                outer: {
+                    nominal: basic.D,
+                    upper: es,
+                    lower: es - Td2
+                },
+                mean: {
+                    nominal: basic.D2,
+                    upper: es,
+                    lower: es - Td2
+                },
+                inner: {
+                    nominal: basic.D1,
+                    upper: es,
+                    lower: es - Td2
+                }
+            };
+
+            return {internal, external};
+        }
+
+        // Форматирование отклонения для отображения
+        static formatDeviation(value) {
+            if (value === 0) return "0";
+            if (value > 0) return `+${value.toFixed(3)}`;
+            return value.toFixed(3);
+        }
+    }
+
+    // Инициализация Telegram Web App
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.MainButton.setText("Поделиться результатом");
+    tg.MainButton.hide();
+
+    function showError(message) {
+        const errorEl = document.getElementById('errorMessage');
+        errorEl.textContent = message;
+        errorEl.classList.add('active');
+        hideResults();
+    }
+
+    function hideError() {
+        document.getElementById('errorMessage').classList.remove('active');
+    }
+
+    function showResults() {
+        hideError();
+        document.getElementById('results').classList.add('active');
+        tg.MainButton.show();
+    }
+
+    function hideResults() {
+        document.getElementById('results').classList.remove('active');
+        tg.MainButton.hide();
+    }
+
+    function formatNumber(value, decimals = 3) {
+        return parseFloat(value.toFixed(decimals));
+    }
+
+    function calculateMetric() {
+        const diameter = parseFloat(document.getElementById('diameter').value);
+        const pitch = parseFloat(document.getElementById('pitch').value);
+        const internalTol = document.getElementById('internalTolerance').value;
+        const externalTol = document.getElementById('externalTolerance').value;
+
+        if (!diameter || !pitch) {
+            showError("Заполните все поля");
+            return;
+        }
+
+        if (diameter <= 0 || pitch <= 0) {
+            showError("Значения должны быть положительными");
+            return;
+        }
+
+        try {
+            const result = MetricThreadCalculator.getTolerances(diameter, pitch, internalTol, externalTol);
+
+            const resultsHtml = `
+                    <tr>
+                        <td class="parameter-name">
+                            <span class="icon outer">⭕</span>Наружный диаметр
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(result.internal.outer.nominal, 3)}</div>
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(result.external.outer.nominal, 3)}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="parameter-name">
+                            <span class="icon mean">🔩</span>Средний диаметр
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(result.internal.mean.nominal, 3)}</div>
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(result.external.mean.nominal, 3)}</div>
+                            <div class="deviation-stack">
+                                <div class="deviation-upper">${MetricThreadCalculator.formatDeviation(result.external.mean.upper)}</div>
+                                <div class="deviation-lower">${MetricThreadCalculator.formatDeviation(result.external.mean.lower)}</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="parameter-name">
+                            <span class="icon inner">🕳️</span>Внутренний диаметр
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(result.internal.inner.nominal, 3)}</div>
+                            <div class="deviation-stack">
+                                <div class="deviation-upper">${MetricThreadCalculator.formatDeviation(result.internal.inner.upper)}</div>
+                                <div class="deviation-lower">${MetricThreadCalculator.formatDeviation(result.internal.inner.lower)}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="diameter-value">${formatNumber(result.external.inner.nominal, 3)}</div>
+                        </td>
+                    </tr>
+                `;
+
+            document.getElementById('resultsBody').innerHTML = resultsHtml;
+            showResults();
+
+        } catch (error) {
+            showError(error.message);
+        }
+    }
+
+    // Обработчик кнопки "Поделиться результатом"
+    tg.MainButton.onClick(() => {
+        const resultsText = document.getElementById('resultsBody').innerText;
+        const internalTol = document.getElementById('internalTolerance').value;
+        const externalTol = document.getElementById('externalTolerance').value;
+
+        tg.sendData(JSON.stringify({
+            action: "share_metric_result",
+            internalTolerance: internalTol,
+            externalTolerance: externalTol,
+            results: resultsText
+        }));
+    });
+
+    // Автозаполнение тестовыми данными для демонстрации
+    document.getElementById('diameter').value = '20';
+    document.getElementById('pitch').value = '2.5';
+</script>
+</body>
+</html>
