@@ -6,6 +6,7 @@
     <title>Калькулятор резьбы Stub ACME</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -323,6 +324,9 @@
 </div>
 
 <script>
+    // Глобальная переменная для хранения результатов расчета
+    let lastCalculationResult = null;
+
     class StubAcmeCalculator {
         static calculate2G(diameter, pitch) {
             const pitchValue = 1 / pitch;
@@ -426,7 +430,13 @@
     // Инициализация Telegram Web App
     let tg = window.Telegram.WebApp;
     tg.expand();
-    tg.MainButton.setText("Поделиться результатом");
+    tg.MainButton.setText("📤 Поделиться результатом");
+
+    // Обработчик для кнопки "Поделиться результатом"
+    tg.MainButton.onClick(() => {
+        shareResultsToTelegram();
+    });
+
     tg.MainButton.hide();
 
     // Обработчики выбора класса допуска
@@ -574,6 +584,55 @@
                 `;
 
             document.getElementById('resultsBody').innerHTML = resultsHtml;
+
+            // Сохраняем результаты для отправки
+            lastCalculationResult = {
+                data_input: {
+                    diameter: diameter,
+                    pitch: pitch,
+                    tolerance: tolerance,
+                    diameter_unit: "дюймы",
+                    pitch_unit: "ниток/дюйм"
+                },
+                answer: {
+                    nippel: {
+                        наружный_диаметр: {
+                            значение_мм: formatNumber(nippleOuterMm, 3),
+                            отклонение_мм: -nippleOuterDeviation
+                        },
+                        средний_диаметр: {
+                            значение_мм: formatNumber(nippleMeanMm, 3),
+                            отклонение_мм: -nippleMeanDeviation
+                        },
+                        внутренний_диаметр: {
+                            значение_мм: formatNumber(nippleInnerMm, 3),
+                            отклонение_мм: -nippleInnerDeviation
+                        }
+                    },
+                    mufta: {
+                        наружный_диаметр: {
+                            значение_мм: formatNumber(couplingOuterMm, 3),
+                            отклонение_мм: +couplingOuterDeviation
+                        },
+                        средний_диаметр: {
+                            значение_мм: formatNumber(couplingMeanMm, 3),
+                            отклонение_мм: +couplingMeanDeviation
+                        },
+                        внутренний_диаметр: {
+                            значение_мм: formatNumber(couplingInnerMm, 3),
+                            отклонение_мм: +couplingInnerDeviation
+                        }
+                    },
+                    высота_профиля: {
+                        значение_мм: threadHeight.value,
+                        допуск_мм: threadHeight.deviation,
+                        ниток_на_дюйм: Math.round(pitch)
+                    }
+                },
+                time: new Date().toISOString()
+            };
+
+            console.log("Результаты сохранены:", lastCalculationResult);
             showResults();
 
         } catch (error) {
@@ -581,19 +640,52 @@
         }
     }
 
-    // Обработчик кнопки "Поделиться результатом"
-    tg.MainButton.onClick(() => {
-        const resultsText = document.getElementById('resultsBody').innerText;
-        tg.sendData(JSON.stringify({
-            action: "share_stub_acme_result",
-            tolerance: document.querySelector('.tolerance-btn.active').dataset.tolerance,
-            results: resultsText
-        }));
-    });
+    // Функция для отправки результатов в Telegram
+    function shareResultsToTelegram() {
+        if (!lastCalculationResult) {
+            tg.showAlert("Сначала выполните расчет!");
+            return;
+        }
+
+        console.log("Отправка данных в Telegram:", lastCalculationResult);
+
+        // Отправляем данные в требуемом формате
+        const dataToSend = {
+            data_input: {
+                диаметр_дюймы: lastCalculationResult.data_input.diameter,
+                шаг_ниток_на_дюйм: lastCalculationResult.data_input.pitch,
+                класс_допуска: lastCalculationResult.data_input.tolerance
+            },
+            answer: lastCalculationResult.answer,
+            time: lastCalculationResult.time
+        };
+
+        console.log("Форматированные данные для отправки:", dataToSend);
+
+        // Отправляем данные
+        const success = tg.sendData(JSON.stringify(dataToSend));
+
+        if (success) {
+            console.log("Данные успешно отправлены");
+            tg.showAlert("Результаты отправлены в Telegram!");
+        } else {
+            console.log("Ошибка при отправке данных");
+            tg.showAlert("Не удалось отправить данные. Попробуйте еще раз.");
+        }
+    }
 
     // Автозаполнение тестовыми данными для демонстрации
     document.getElementById('diameter').value = '2.157';
     document.getElementById('pitch').value = '8';
+
+    // Для отладки в браузере
+    window.debugShare = function () {
+        if (!lastCalculationResult) {
+            calculateStubAcme();
+        }
+        console.log("Результаты для отправки:", lastCalculationResult);
+        alert("В браузере данные не отправляются. В Telegram нажмите кнопку 'Поделиться результатом'.");
+    };
 </script>
 </body>
 </html>
