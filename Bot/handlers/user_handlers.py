@@ -1,10 +1,11 @@
 import json
-from datetime import datetime
-
+from datetime import datetime, timezone, timedelta
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from Bot.keybords import inline_menu
+
+uts = timezone(timedelta(hours=5))
 
 router = Router()
 
@@ -21,10 +22,12 @@ async def web_app_handler(message: Message):
     data = json.loads(message.web_app_data.data)
     d=(data.get('time'))
     date = datetime.fromisoformat(d)
-    print(date.strftime("%H-%M(%z) %d.%m.%Y"))
-    await message.answer(f'{data.get('data_input_row')}\n'
-                         f'{data.get('answer_row')}'
-                         f'')
+
+    data_uts = date.astimezone(uts)
+    print(data_uts.strftime("%H:%M %d.%m.%Y"))
+    await message.answer(f"{data.get('data_input_row')}\n\n"
+                         f"{data.get('answer_row')}\n\n"
+                         f'⏰Расчёт выполнен в {data_uts.strftime("%H:%M %d.%m.%Y")}')
 
 
 @router.message(F.content_type != "web_app_data")

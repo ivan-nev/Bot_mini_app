@@ -307,6 +307,9 @@
 </div>
 
 <script>
+    // Глобальная переменная для хранения результатов расчета
+    let lastCalculationResult = null;
+
     // Данные из таблицы "степень точности резьбы.xlsx"
     const toleranceTable = [
         {
@@ -522,7 +525,13 @@
     // Инициализация Telegram Web App
     let tg = window.Telegram.WebApp;
     tg.expand();
-    tg.MainButton.setText("Поделиться результатом");
+    tg.MainButton.setText("📤 Поделиться результатом");
+
+    // Обработчик для кнопки "Поделиться результатом"
+    tg.MainButton.onClick(() => {
+        shareResultsToTelegram();
+    });
+
     tg.MainButton.hide();
 
     function showError(message) {
@@ -549,6 +558,12 @@
 
     function formatNumber(value, decimals = 3) {
         return parseFloat(value.toFixed(decimals));
+    }
+
+    // Функция для форматирования отклонений в виде "верхний/нижний"
+    function formatDeviationRange(upper, lower) {
+        if (upper === 0 && lower === 0) return "0";
+        return `${upper > 0 ? '+' : ''}${upper.toFixed(3)}/${lower > 0 ? '+' : ''}${lower.toFixed(3)}`;
     }
 
     function calculateMetric() {
@@ -580,6 +595,10 @@
                         </td>
                         <td>
                             <div class="diameter-value">${formatNumber(result.external.outer.nominal, 3)}</div>
+                            <div class="deviation-stack">
+                                <div class="deviation-upper">${MetricThreadCalculator.formatDeviation(result.external.outer.upper)}</div>
+                                <div class="deviation-lower">${MetricThreadCalculator.formatDeviation(result.external.outer.lower)}</div>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -588,6 +607,10 @@
                         </td>
                         <td>
                             <div class="diameter-value">${formatNumber(result.internal.mean.nominal, 3)}</div>
+                            <div class="deviation-stack">
+                                <div class="deviation-upper">${MetricThreadCalculator.formatDeviation(result.internal.mean.upper)}</div>
+                                <div class="deviation-lower">${MetricThreadCalculator.formatDeviation(result.internal.mean.lower)}</div>
+                            </div>
                         </td>
                         <td>
                             <div class="diameter-value">${formatNumber(result.external.mean.nominal, 3)}</div>
@@ -615,6 +638,76 @@
                 `;
 
             document.getElementById('resultsBody').innerHTML = resultsHtml;
+
+            // Формируем текстовые строки для отправки в Telegram
+            const dataInputRow = `📐 Входные данные:
+• Резьба: Метрическая
+• Наружный диаметр: ${diameter} мм
+• Шаг резьбы: ${pitch} мм
+• Допуск муфты (внутренняя): ${internalTol}
+• Допуск ниппеля (наружная): ${externalTol}`;
+
+            const answerRow = `📊 Результаты расчета:
+МУФТА (внутренняя резьба):
+• Наружный диаметр: ${formatNumber(result.internal.outer.nominal, 3)} мм
+• Средний диаметр: ${formatNumber(result.internal.mean.nominal, 3)} ${formatDeviationRange(result.internal.mean.upper, result.internal.mean.lower)} мм
+• Внутренний диаметр: ${formatNumber(result.internal.inner.nominal, 3)} ${formatDeviationRange(result.internal.inner.upper, result.internal.inner.lower)} мм
+
+НИППЕЛЬ (наружная резьба):
+• Наружный диаметр: ${formatNumber(result.external.outer.nominal, 3)} ${formatDeviationRange(result.external.outer.upper, result.external.outer.lower)} мм
+• Средний диаметр: ${formatNumber(result.external.mean.nominal, 3)} ${formatDeviationRange(result.external.mean.upper, result.external.mean.lower)} мм
+• Внутренний диаметр: ${formatNumber(result.external.inner.nominal, 3)} мм`;
+
+            // Сохраняем результаты для отправки
+            lastCalculationResult = {
+                data_input: {
+                    наружный_диаметр_мм: diameter,
+                    шаг_мм: pitch,
+                    допуск_муфты: internalTol,
+                    допуск_ниппеля: externalTol
+                },
+                answer: {
+                    муфта: {
+                        наружный_диаметр: {
+                            значение_мм: formatNumber(result.internal.outer.nominal, 3),
+                            отклонение_верхнее: result.internal.outer.upper,
+                            отклонение_нижнее: result.internal.outer.lower
+                        },
+                        средний_диаметр: {
+                            значение_мм: formatNumber(result.internal.mean.nominal, 3),
+                            отклонение_верхнее: result.internal.mean.upper,
+                            отклонение_нижнее: result.internal.mean.lower
+                        },
+                        внутренний_диаметр: {
+                            значение_мм: formatNumber(result.internal.inner.nominal, 3),
+                            отклонение_верхнее: result.internal.inner.upper,
+                            отклонение_нижнее: result.internal.inner.lower
+                        }
+                    },
+                    ниппель: {
+                        наружный_диаметр: {
+                            значение_мм: formatNumber(result.external.outer.nominal, 3),
+                            отклонение_верхнее: result.external.outer.upper,
+                            отклонение_нижнее: result.external.outer.lower
+                        },
+                        средний_диаметр: {
+                            значение_мм: formatNumber(result.external.mean.nominal, 3),
+                            отклонение_верхнее: result.external.mean.upper,
+                            отклонение_нижнее: result.external.mean.lower
+                        },
+                        внутренний_диаметр: {
+                            значение_мм: formatNumber(result.external.inner.nominal, 3),
+                            отклонение_верхнее: result.external.inner.upper,
+                            отклонение_нижнее: result.external.inner.lower
+                        }
+                    }
+                },
+                data_input_row: dataInputRow,
+                answer_row: answerRow,
+                time: new Date().toISOString()
+            };
+
+            console.log("Результаты сохранены:", lastCalculationResult);
             showResults();
 
         } catch (error) {
@@ -622,68 +715,57 @@
         }
     }
 
-    // Обработчик кнопки "Поделиться результатом"
-    tg.MainButton.onClick(() => {
-        // Собираем структурированные данные
-        const diameter = document.getElementById('diameter').value;
-        const pitch = document.getElementById('pitch').value;
-        const internalTol = document.getElementById('internalTolerance').value;
-        const externalTol = document.getElementById('externalTolerance').value;
+    // Функция для отправки результатов в Telegram
+    function shareResultsToTelegram() {
+        if (!lastCalculationResult) {
+            tg.showAlert("Сначала выполните расчет!");
+            return;
+        }
 
-        // Собираем результаты в структурированном виде
-        const rows = document.querySelectorAll('#resultsBody tr');
-        const results = [];
+        console.log("Отправка данных в Telegram:", lastCalculationResult);
 
-        rows.forEach(row => {
-            const paramElement = row.querySelector('.parameter-name');
-            const paramText = paramElement ?
-                    paramElement.textContent.replace(/[⭕🔩🕳️]/g, '').trim() : '';
-
-            const nutCell = row.cells[1];
-            const boltCell = row.cells[2];
-
-            const nutValue = nutCell.querySelector('.diameter-value')?.textContent || '';
-            const boltValue = boltCell.querySelector('.diameter-value')?.textContent || '';
-
-            // Собираем отклонения
-            const nutDeviations = [];
-            const boltDeviations = [];
-
-            nutCell.querySelectorAll('.deviation-upper, .deviation-lower')
-                    .forEach(el => nutDeviations.push(el.textContent));
-            boltCell.querySelectorAll('.deviation-upper, .deviation-lower')
-                    .forEach(el => boltDeviations.push(el.textContent));
-
-            results.push({
-                parameter: paramText,
-                nut: {
-                    value: nutValue,
-                    deviations: nutDeviations
-                },
-                bolt: {
-                    value: boltValue,
-                    deviations: boltDeviations
-                }
-            });
-        });
-
-        const data = {
-            action: "share_metric_result",
-            diameter: diameter,
-            pitch: pitch,
-            internalTolerance: internalTol,
-            externalTolerance: externalTol,
-            results: results,
-            raw_text: document.getElementById('resultsBody').innerText,
-            timestamp: new Date().toISOString()
+        // Отправляем данные в требуемом формате
+        const dataToSend = {
+            data_input: lastCalculationResult.data_input,
+            answer: lastCalculationResult.answer,
+            data_input_row: lastCalculationResult.data_input_row,
+            answer_row: lastCalculationResult.answer_row,
+            time: lastCalculationResult.time
         };
 
-        tg.sendData(JSON.stringify(data));
-    });
+        console.log("Форматированные данные для отправки:", dataToSend);
+
+        // Отправляем данные
+        const success = tg.sendData(JSON.stringify(dataToSend));
+
+        if (success) {
+            console.log("Данные успешно отправлены");
+            tg.showAlert("Результаты отправлены в Telegram!");
+        } else {
+            console.log("Ошибка при отправке данных");
+            tg.showAlert("Не удалось отправить данные. Попробуйте еще раз.");
+        }
+    }
 
     // Автозаполнение тестовыми данными для демонстрации
     document.getElementById('diameter').value = '20';
     document.getElementById('pitch').value = '2.5';
+
+    // Для отладки в браузере
+    window.debugShare = function () {
+        if (!lastCalculationResult) {
+            calculateMetric();
+        }
+        console.log("Результаты для отправки:", lastCalculationResult);
+
+        // Показываем форматированные строки
+        console.log("data_input_row:");
+        console.log(lastCalculationResult.data_input_row);
+        console.log("\nanswer_row:");
+        console.log(lastCalculationResult.answer_row);
+
+        alert("В браузере данные не отправляются. В Telegram нажмите кнопку 'Поделиться результатом'.\n\nСтроки сформированы и видны в консоли.");
+    };
 </script>
 </body>
 </html>
