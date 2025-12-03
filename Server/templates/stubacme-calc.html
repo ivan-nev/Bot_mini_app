@@ -6,7 +6,6 @@
     <title>Калькулятор резьбы Stub ACME</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -427,6 +426,12 @@
         }
     }
 
+    // Функция для форматирования чисел с отклонениями
+    function formatWithDeviation(value, deviation, isPositive = true) {
+        const sign = isPositive ? '+' : '-';
+        return `${value.toFixed(3)} ${sign}${Math.abs(deviation).toFixed(3)}`;
+    }
+
     // Инициализация Telegram Web App
     let tg = window.Telegram.WebApp;
     tg.expand();
@@ -585,6 +590,26 @@
 
             document.getElementById('resultsBody').innerHTML = resultsHtml;
 
+            // Формируем текстовые строки для отправки в Telegram
+            const dataInputRow = `📐 Входные данные:
+• Диаметр: ${diameter} дюймов
+• Шаг: ${pitch} ниток/дюйм
+• Класс допуска: ${tolerance}`;
+
+            const answerRow = `📊 Результаты расчета:
+НИППЕЛЬ:
+• Наружный: ${formatNumber(nippleOuterMm, 3)}⁻${nippleOuterDeviation} мм
+• Средний: ${formatNumber(nippleMeanMm, 3)}⁻${nippleMeanDeviation} мм
+• Внутренний: ${formatNumber(nippleInnerMm, 3)}⁻${nippleInnerDeviation} мм
+
+МУФТА:
+• Наружный: ${formatNumber(couplingOuterMm, 3)}⁺${couplingOuterDeviation} мм
+• Средний: ${formatNumber(couplingMeanMm, 3)}⁺${couplingMeanDeviation} мм
+• Внутренний: ${formatNumber(couplingInnerMm, 3)}⁺${couplingInnerDeviation} мм
+
+Высота профиля: ${threadHeight.value}⁺${threadHeight.deviation} мм
+(${Math.round(pitch)} ниток/дюйм)`;
+
             // Сохраняем результаты для отправки
             lastCalculationResult = {
                 data_input: {
@@ -629,6 +654,8 @@
                         ниток_на_дюйм: Math.round(pitch)
                     }
                 },
+                data_input_row: dataInputRow,
+                answer_row: answerRow,
                 time: new Date().toISOString()
             };
 
@@ -657,6 +684,8 @@
                 класс_допуска: lastCalculationResult.data_input.tolerance
             },
             answer: lastCalculationResult.answer,
+            data_input_row: lastCalculationResult.data_input_row,
+            answer_row: lastCalculationResult.answer_row,
             time: lastCalculationResult.time
         };
 
@@ -684,7 +713,50 @@
             calculateStubAcme();
         }
         console.log("Результаты для отправки:", lastCalculationResult);
-        alert("В браузере данные не отправляются. В Telegram нажмите кнопку 'Поделиться результатом'.");
+
+        // Показываем форматированные строки
+        console.log("data_input_row:");
+        console.log(lastCalculationResult.data_input_row);
+        console.log("\nanswer_row:");
+        console.log(lastCalculationResult.answer_row);
+
+        alert("В браузере данные не отправляются. В Telegram нажмите кнопку 'Поделиться результатом'.\n\nСтроки сформированы и видны в консоли.");
+    };
+
+    // Функция для предпросмотра форматированных строк
+    window.previewFormatting = function () {
+        if (!lastCalculationResult) {
+            calculateStubAcme();
+        }
+
+        const previewWindow = window.open("", "Preview", "width=600,height=800");
+        previewWindow.document.write(`
+            <html>
+                <head>
+                    <title>Предпросмотр форматирования</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; }
+                        .section { margin-bottom: 30px; }
+                        h2 { color: #333; }
+                    </style>
+                </head>
+                <body>
+                    <div class="section">
+                        <h2>data_input_row:</h2>
+                        <pre>${lastCalculationResult.data_input_row}</pre>
+                    </div>
+                    <div class="section">
+                        <h2>answer_row:</h2>
+                        <pre>${lastCalculationResult.answer_row}</pre>
+                    </div>
+                    <div class="section">
+                        <h2>JSON данные:</h2>
+                        <pre>${JSON.stringify(lastCalculationResult, null, 2)}</pre>
+                    </div>
+                </body>
+            </html>
+        `);
     };
 </script>
 </body>
