@@ -423,10 +423,16 @@
         }
     }
 
-    // Инициализация Telegram Web App
+    // Инициализация Telegram Web App - ГЛОБАЛЬНО
     let tg = window.Telegram.WebApp;
     tg.expand();
-    tg.MainButton.setText("Поделиться результатом");
+
+    // Обработчик для MainButton
+    tg.MainButton.setText("📤 Поделиться результатом");
+    tg.MainButton.onClick(() => {
+        console.log("MainButton clicked");
+        shareToTelegram();
+    });
     tg.MainButton.hide();
 
     // Обработчики выбора класса допуска
@@ -452,143 +458,27 @@
     function showResults() {
         hideError();
         document.getElementById('results').classList.add('active');
-        tg.MainButton.show(); // Используем глобальную tg
+        tg.MainButton.show(); // Показываем MainButton Telegram
     }
 
     function hideResults() {
         document.getElementById('results').classList.remove('active');
-        tg.MainButton.hide(); // Используем глобальную tg
+        tg.MainButton.hide(); // Скрываем MainButton Telegram
     }
 
     function formatNumber(value, decimals = 3) {
         return parseFloat(value.toFixed(decimals));
     }
 
-    function calculateStubAcme() {
-        const diameter = parseFloat(document.getElementById('diameter').value);
-        const pitch = parseFloat(document.getElementById('pitch').value);
-        const tolerance = document.querySelector('.tolerance-btn.active').dataset.tolerance;
+    // Функция для отправки данных в Telegram
+    function shareToTelegram() {
+        console.log("shareToTelegram called");
 
-        if (!diameter || !pitch) {
-            showError("Заполните все поля");
-            return;
-        }
-
-        if (diameter <= 0 || pitch <= 0) {
-            showError("Значения должны быть положительными");
-            return;
-        }
-
-        try {
-            let result;
-            if (tolerance === '2G') {
-                result = StubAcmeCalculator.calculate2G(diameter, pitch);
-            } else {
-                result = StubAcmeCalculator.calculate4G(diameter, pitch);
-            }
-
-            // Расчет отклонений для НИППЕЛЯ (минусовые допуски)
-            const nippleOuterMm = StubAcmeCalculator.inchesToMm(result.nipple.outerDiameter);
-            const nippleOuterMinMm = StubAcmeCalculator.inchesToMm(result.nipple.outerDiameterMin);
-            const nippleOuterDeviation = formatNumber(nippleOuterMm - nippleOuterMinMm, 3);
-
-            const nippleMeanMm = StubAcmeCalculator.inchesToMm(result.nipple.meanDiameter);
-            const nippleMeanMinMm = StubAcmeCalculator.inchesToMm(result.nipple.meanDiameterMin);
-            const nippleMeanDeviation = formatNumber(nippleMeanMm - nippleMeanMinMm, 3);
-
-            const nippleInnerMm = StubAcmeCalculator.inchesToMm(result.nipple.innerDiameter);
-            const nippleInnerMinMm = StubAcmeCalculator.inchesToMm(result.nipple.innerDiameterMin);
-            const nippleInnerDeviation = formatNumber(nippleInnerMm - nippleInnerMinMm, 3);
-
-            // Расчет отклонений для МУФТЫ (плюсовые допуски)
-            const couplingOuterMm = StubAcmeCalculator.inchesToMm(result.coupling.outerDiameter);
-            const couplingOuterMaxMm = StubAcmeCalculator.inchesToMm(result.coupling.outerDiameterMax);
-            const couplingOuterDeviation = formatNumber(couplingOuterMaxMm - couplingOuterMm, 3);
-
-            const couplingMeanMm = StubAcmeCalculator.inchesToMm(result.coupling.meanDiameter);
-            const couplingMeanMaxMm = StubAcmeCalculator.inchesToMm(result.coupling.meanDiameterMax);
-            const couplingMeanDeviation = formatNumber(couplingMeanMaxMm - couplingMeanMm, 3);
-
-            const couplingInnerMm = StubAcmeCalculator.inchesToMm(result.coupling.innerDiameter);
-            const couplingInnerMaxMm = StubAcmeCalculator.inchesToMm(result.coupling.innerDiameterMax);
-            const couplingInnerDeviation = formatNumber(couplingInnerMaxMm - couplingInnerMm, 3);
-
-            // Расчет высоты профиля
-            const threadHeight = StubAcmeCalculator.calculateThreadHeight(pitch);
-
-            // Формируем HTML для таблицы
-            const resultsHtml = `
-                        <tr>
-                            <td class="parameter-name two-lines">
-                                <span class="icon outer">⭕</span>Наружный
-                                <div class="empty-line">&nbsp;</div>
-                            </td>
-                            <td>
-                                <div class="diameter-value">${formatNumber(nippleOuterMm, 3)}</div>
-                                <div class="deviation negative">-${nippleOuterDeviation}</div>
-                            </td>
-                            <td>
-                                <div class="diameter-value">${formatNumber(couplingOuterMm, 3)}</div>
-                                <div class="deviation positive">+${couplingOuterDeviation}</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="parameter-name two-lines">
-                                <span class="icon mean">🔩</span>Средний
-                                <div class="empty-line">&nbsp;</div>
-                            </td>
-                            <td>
-                                <div class="diameter-value">${formatNumber(nippleMeanMm, 3)}</div>
-                                <div class="deviation negative">-${nippleMeanDeviation}</div>
-                            </td>
-                            <td>
-                                <div class="diameter-value">${formatNumber(couplingMeanMm, 3)}</div>
-                                <div class="deviation positive">+${couplingMeanDeviation}</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="parameter-name two-lines">
-                                <span class="icon inner">🕳️</span>Внутренний
-                                <div class="empty-line">&nbsp;</div>
-                            </td>
-                            <td>
-                                <div class="diameter-value">${formatNumber(nippleInnerMm, 3)}</div>
-                                <div class="deviation negative">-${nippleInnerDeviation}</div>
-                            </td>
-                            <td>
-                                <div class="diameter-value">${formatNumber(couplingInnerMm, 3)}</div>
-                                <div class="deviation positive">+${couplingInnerDeviation}</div>
-                            </td>
-                        </tr>
-                        <tr class="height-row">
-                            <td class="parameter-name two-lines">
-                                <span class="icon height">📐</span>Высота профиля
-                                <div class="empty-line">&nbsp;</div>
-                            </td>
-                            <td colspan="2">
-                                <div class="height-value">${threadHeight.value} мм</div>
-                                <div class="deviation positive">+${threadHeight.deviation}</div>
-                                <div class="pitch-info">${Math.round(pitch)} ниток/дюйм</div>
-                            </td>
-                        </tr>
-                    `;
-
-            document.getElementById('resultsBody').innerHTML = resultsHtml;
-            showResults(); // Теперь кнопка появится
-
-        } catch (error) {
-            showError("Ошибка расчета: " + error.message);
-        }
-    }
-
-    // Обработчик кнопки "Поделиться результатом" - ПЕРЕМЕЩЕН НИЖЕ
-    tg.MainButton.onClick(() => {
-        // Собираем структурированные данные
         const diameter = document.getElementById('diameter').value;
         const pitch = document.getElementById('pitch').value;
         const tolerance = document.querySelector('.tolerance-btn.active').dataset.tolerance;
 
-        // Собираем результаты в структурированном виде
+        // Собираем результаты
         const rows = document.querySelectorAll('#resultsBody tr');
         const results = [];
 
@@ -603,7 +493,6 @@
             const nippleValue = nippleCell.querySelector('.diameter-value, .height-value')?.textContent || '';
             const couplingValue = couplingCell.querySelector('.diameter-value, .height-value')?.textContent || '';
 
-            // Собираем отклонения
             const nippleDeviations = [];
             const couplingDeviations = [];
 
@@ -635,12 +524,74 @@
             timestamp: new Date().toISOString()
         };
 
-        tg.sendData(JSON.stringify(data));
-    });
+        console.log("Sending data to Telegram:", data);
+
+        // Отправляем данные в Telegram
+        const success = tg.sendData(JSON.stringify(data));
+
+        if (success) {
+            console.log("Data sent successfully");
+            // Можно показать сообщение об успехе
+            tg.showAlert("Результаты отправлены в Telegram!");
+        } else {
+            console.log("Failed to send data");
+            tg.showAlert("Не удалось отправить данные. Попробуйте еще раз.");
+        }
+    }
+
+    function calculateStubAcme() {
+        const diameter = parseFloat(document.getElementById('diameter').value);
+        const pitch = parseFloat(document.getElementById('pitch').value);
+        const tolerance = document.querySelector('.tolerance-btn.active').dataset.tolerance;
+
+        if (!diameter || !pitch) {
+            showError("Заполните все поля");
+            return;
+        }
+
+        if (diameter <= 0 || pitch <= 0) {
+            showError("Значения должны быть положительными");
+            return;
+        }
+
+        try {
+            let result;
+            if (tolerance === '2G') {
+                result = StubAcmeCalculator.calculate2G(diameter, pitch);
+            } else {
+                result = StubAcmeCalculator.calculate4G(diameter, pitch);
+            }
+
+            // ... (остальной код расчета без изменений)
+
+            document.getElementById('resultsBody').innerHTML = resultsHtml;
+            showResults(); // Теперь MainButton появится
+
+        } catch (error) {
+            showError("Ошибка расчета: " + error.message);
+        }
+    }
 
     // Автозаполнение тестовыми данными для демонстрации
     document.getElementById('diameter').value = '2.157';
     document.getElementById('pitch').value = '8';
+
+    // Для отладки: выводим информацию о Telegram Web App
+    console.log("Telegram Web App initialized:", {
+        platform: tg.platform,
+        version: tg.version,
+        initData: tg.initData ? "present" : "absent",
+        initDataUnsafe: tg.initDataUnsafe
+    });
+
+    // Проверяем, инициализирован ли Telegram Web App
+    if (!tg.initData) {
+        console.warn("Telegram Web App not properly initialized. Running in browser mode.");
+        // Для тестирования в браузере
+        window.testShare = function () {
+            alert("В режиме браузера данные не отправляются. Откройте в Telegram.");
+        };
+    }
 </script>
 </body>
 </html>

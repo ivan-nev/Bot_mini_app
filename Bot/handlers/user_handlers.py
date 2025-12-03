@@ -14,15 +14,15 @@ async def start(message: Message):
     await message.answer(text="расчёт резьб", reply_markup=inline_menu.create_menu_thread())
 
 
-# @router.message(F.content_type == "web_app_data")
-# async def web_app_handler(message: Message):
-#     """Основной обработчик Web App данных"""
-#     # Получаем и парсим данные
-#     data = json.loads(message.web_app_data.data)
-#     print(data)
-
-
 @router.message(F.content_type == "web_app_data")
+async def web_app_handler(message: Message):
+    """Основной обработчик Web App данных"""
+    # Получаем и парсим данные
+    data = json.loads(message.web_app_data.data)
+    print(data)
+
+
+@router.message(F.content_type != "web_app_data")
 async def web_app_handler(message: Message):
     """Основной обработчик Web App данных"""
     try:
