@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Telegram Web App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            display: none;
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        .debug {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🛠 Тест Telegram Web App</h1>
+
+    <div class="input-group">
+        <label for="numberInput">Введите число:</label>
+        <input type="number" id="numberInput" placeholder="Введите число" value="10">
+    </div>
+
+    <button class="button" onclick="calculate()">Рассчитать (+1)</button>
+
+    <div class="result" id="resultContainer">
+        Результат: <span id="resultValue">0</span>
+    </div>
+
+    <button class="button" onclick="shareResult()" id="shareButton" style="display: none;">
+        📤 Поделиться результатом
+    </button>
+
+    <div class="debug" id="debugInfo">
+        Debug info will appear here
+    </div>
+</div>
+
+<script>
+    // Инициализация Telegram Web App
+    let tg;
+    let webAppInitialized = false;
+
+    function initTelegramWebApp() {
+        try {
+            // Проверяем, доступен ли Telegram Web App
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                tg.expand();
+                logDebug("Telegram Web App инициализирован");
+                logDebug("Версия: " + tg.version);
+                logDebug("Платформа: " + tg.platform);
+                logDebug("Инициализационные данные: " + JSON.stringify(tg.initData));
+
+                webAppInitialized = true;
+
+                // Показываем debug информацию
+                showDebugInfo();
+
+                return true;
+            } else {
+                logDebug("Telegram Web App не найден. Работаем в браузере.");
+                return false;
+            }
+        } catch (error) {
+            logDebug("Ошибка инициализации Telegram Web App: " + error.message);
+            return false;
+        }
+    }
+
+    function logDebug(message) {
+        console.log("[DEBUG] " + message);
+        const debugEl = document.getElementById('debugInfo');
+        debugEl.innerHTML += message + '\n';
+        debugEl.scrollTop = debugEl.scrollHeight;
+    }
+
+    function showDebugInfo() {
+        if (tg) {
+            logDebug("initDataUnsafe: " + JSON.stringify(tg.initDataUnsafe, null, 2));
+            logDebug("themeParams: " + JSON.stringify(tg.themeParams, null, 2));
+        }
+    }
+
+    // Функция расчета
+    function calculate() {
+        const input = document.getElementById('numberInput');
+        const resultEl = document.getElementById('resultValue');
+        const resultContainer = document.getElementById('resultContainer');
+        const shareButton = document.getElementById('shareButton');
+
+        if (!input.value) {
+            alert("Введите число!");
+            return;
+        }
+
+        const number = parseFloat(input.value);
+        const result = number + 1;
+
+        resultEl.textContent = result;
+        resultContainer.classList.add('active');
+        shareButton.style.display = 'block';
+
+        logDebug("Расчет выполнен: " + number + " + 1 = " + result);
+    }
+
+    // Функция отправки результата в Telegram
+    function shareResult() {
+        const result = document.getElementById('resultValue').textContent;
+        const input = document.getElementById('numberInput').value;
+
+        logDebug("Попытка отправки результата в Telegram...");
+
+        if (webAppInitialized && tg) {
+            try {
+                // Создаем данные для отправки
+                const data = {
+                    action: "share_test_result",
+                    original_number: input,
+                    calculated_result: result,
+                    timestamp: new Date().toISOString(),
+                    platform: tg.platform || "browser"
+                };
+
+                logDebug("Отправляемые данные: " + JSON.stringify(data));
+
+                // Пытаемся отправить данные
+                const success = tg.sendData(JSON.stringify(data));
+
+                if (success) {
+                    logDebug("Данные отправлены успешно");
+                    alert("Результат отправлен в Telegram!");
+                } else {
+                    logDebug("Ошибка при отправке данных");
+                    alert("Не удалось отправить данные. Попробуйте еще раз.");
+                }
+
+            } catch (error) {
+                logDebug("Ошибка при отправке: " + error.message);
+                alert("Ошибка: " + error.message);
+            }
+        } else {
+            logDebug("Telegram Web App не инициализирован. Имитация отправки.");
+            alert("В режиме браузера данные не отправляются. Откройте в Telegram.");
+
+            // Показываем, какие данные были бы отправлены
+            const data = {
+                action: "share_test_result",
+                original_number: input,
+                calculated_result: result,
+                timestamp: new Date().toISOString(),
+                platform: "browser"
+            };
+
+            logDebug("Имитация отправки: " + JSON.stringify(data));
+        }
+    }
+
+    // Альтернативный метод через MainButton Telegram
+    function setupTelegramMainButton() {
+        if (webAppInitialized && tg) {
+            try {
+                // Создаем главную кнопку Telegram
+                tg.MainButton.setText("📤 Отправить в Telegram");
+                tg.MainButton.onClick(() => {
+                    logDebug("MainButton clicked");
+                    shareResult();
+                });
+
+                tg.MainButton.show();
+                logDebug("MainButton настроен и показан");
+
+            } catch (error) {
+                logDebug("Ошибка настройки MainButton: " + error.message);
+            }
+        }
+    }
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function () {
+        logDebug("Страница загружена");
+
+        // Инициализируем Telegram Web App
+        const tgInitialized = initTelegramWebApp();
+
+        if (tgInitialized) {
+            // Настраиваем MainButton
+            setupTelegramMainButton();
+
+            // Показываем дополнительную информацию о Web App
+            document.getElementById('shareButton').style.display = 'none';
+        } else {
+            logDebug("Работаем в режиме браузера");
+        }
+
+        // Выполняем тестовый расчет
+        calculate();
+    });
+
+    // Функция для очистки debug информации
+    window.clearDebug = function () {
+        document.getElementById('debugInfo').innerHTML = '';
+    };
+</script>
+</body>
+</html>

@@ -19,6 +19,10 @@ async def stub_acme_calc(request:Request):
 async def metric_calc(request:Request):
     return templates.TemplateResponse("metric-calc.html", {"request": request})
 
+@app.get("/test")
+async def metric_calc(request:Request):
+    return templates.TemplateResponse("test.html", {"request": request})
+
 
 
 @app.get("/hello/{name}")
