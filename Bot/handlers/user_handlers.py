@@ -19,7 +19,12 @@ async def web_app_handler(message: Message):
     """Основной обработчик Web App данных"""
     # Получаем и парсим данные
     data = json.loads(message.web_app_data.data)
-    print(data)
+    d=(data.get('time'))
+    date = datetime.fromisoformat(d)
+    print(date.strftime("%H-%M(%z) %d.%m.%Y"))
+    await message.answer(f'{data.get('data_input_row')}\n'
+                         f'{data.get('answer_row')}'
+                         f'')
 
 
 @router.message(F.content_type != "web_app_data")

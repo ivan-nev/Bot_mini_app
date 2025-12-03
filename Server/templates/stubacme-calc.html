@@ -598,16 +598,16 @@
 
             const answerRow = `📊 Результаты расчета:
 НИППЕЛЬ:
-• Наружный: ${formatNumber(nippleOuterMm, 3)}⁻${nippleOuterDeviation} мм
-• Средний: ${formatNumber(nippleMeanMm, 3)}⁻${nippleMeanDeviation} мм
-• Внутренний: ${formatNumber(nippleInnerMm, 3)}⁻${nippleInnerDeviation} мм
+• Наружный: ${formatNumber(nippleOuterMm, 3)} -${nippleOuterDeviation} мм
+• Средний: ${formatNumber(nippleMeanMm, 3)} -${nippleMeanDeviation} мм
+• Внутренний: ${formatNumber(nippleInnerMm, 3)} -${nippleInnerDeviation} мм
 
 МУФТА:
-• Наружный: ${formatNumber(couplingOuterMm, 3)}⁺${couplingOuterDeviation} мм
-• Средний: ${formatNumber(couplingMeanMm, 3)}⁺${couplingMeanDeviation} мм
-• Внутренний: ${formatNumber(couplingInnerMm, 3)}⁺${couplingInnerDeviation} мм
+• Наружный: ${formatNumber(couplingOuterMm, 3)} +${couplingOuterDeviation} мм
+• Средний: ${formatNumber(couplingMeanMm, 3)} +${couplingMeanDeviation} мм
+• Внутренний: ${formatNumber(couplingInnerMm, 3)} +${couplingInnerDeviation} мм
 
-Высота профиля: ${threadHeight.value}⁺${threadHeight.deviation} мм
+Высота профиля: ${threadHeight.value} +${threadHeight.deviation} мм
 (${Math.round(pitch)} ниток/дюйм)`;
 
             // Сохраняем результаты для отправки

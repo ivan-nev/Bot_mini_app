@@ -12,6 +12,6 @@ COPY . ./Server
 # Создание непривилегированного пользователя
 RUN useradd -m -u 1000 fastapi_user && chown -R fastapi_user:fastapi_user /app
 USER fastapi_user
-
+ENV TZ=Asia/Yekaterinburg
 # Запуск приложения
 CMD ["uvicorn", "Server.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
