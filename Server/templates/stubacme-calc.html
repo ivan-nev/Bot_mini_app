@@ -452,12 +452,12 @@
     function showResults() {
         hideError();
         document.getElementById('results').classList.add('active');
-        tg.MainButton.show();
+        tg.MainButton.show(); // Используем глобальную tg
     }
 
     function hideResults() {
         document.getElementById('results').classList.remove('active');
-        tg.MainButton.hide();
+        tg.MainButton.hide(); // Используем глобальную tg
     }
 
     function formatNumber(value, decimals = 3) {
@@ -518,70 +518,70 @@
 
             // Формируем HTML для таблицы
             const resultsHtml = `
-                    <tr>
-                        <td class="parameter-name two-lines">
-                            <span class="icon outer">⭕</span>Наружный
-                            <div class="empty-line">&nbsp;</div>
-                        </td>
-                        <td>
-                            <div class="diameter-value">${formatNumber(nippleOuterMm, 3)}</div>
-                            <div class="deviation negative">-${nippleOuterDeviation}</div>
-                        </td>
-                        <td>
-                            <div class="diameter-value">${formatNumber(couplingOuterMm, 3)}</div>
-                            <div class="deviation positive">+${couplingOuterDeviation}</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="parameter-name two-lines">
-                            <span class="icon mean">🔩</span>Средний
-                            <div class="empty-line">&nbsp;</div>
-                        </td>
-                        <td>
-                            <div class="diameter-value">${formatNumber(nippleMeanMm, 3)}</div>
-                            <div class="deviation negative">-${nippleMeanDeviation}</div>
-                        </td>
-                        <td>
-                            <div class="diameter-value">${formatNumber(couplingMeanMm, 3)}</div>
-                            <div class="deviation positive">+${couplingMeanDeviation}</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="parameter-name two-lines">
-                            <span class="icon inner">🕳️</span>Внутренний
-                            <div class="empty-line">&nbsp;</div>
-                        </td>
-                        <td>
-                            <div class="diameter-value">${formatNumber(nippleInnerMm, 3)}</div>
-                            <div class="deviation negative">-${nippleInnerDeviation}</div>
-                        </td>
-                        <td>
-                            <div class="diameter-value">${formatNumber(couplingInnerMm, 3)}</div>
-                            <div class="deviation positive">+${couplingInnerDeviation}</div>
-                        </td>
-                    </tr>
-                    <tr class="height-row">
-                        <td class="parameter-name two-lines">
-                            <span class="icon height">📐</span>Высота профиля
-                            <div class="empty-line">&nbsp;</div>
-                        </td>
-                        <td colspan="2">
-                            <div class="height-value">${threadHeight.value} мм</div>
-                            <div class="deviation positive">+${threadHeight.deviation}</div>
-                            <div class="pitch-info">${Math.round(pitch)} ниток/дюйм</div>
-                        </td>
-                    </tr>
-                `;
+                        <tr>
+                            <td class="parameter-name two-lines">
+                                <span class="icon outer">⭕</span>Наружный
+                                <div class="empty-line">&nbsp;</div>
+                            </td>
+                            <td>
+                                <div class="diameter-value">${formatNumber(nippleOuterMm, 3)}</div>
+                                <div class="deviation negative">-${nippleOuterDeviation}</div>
+                            </td>
+                            <td>
+                                <div class="diameter-value">${formatNumber(couplingOuterMm, 3)}</div>
+                                <div class="deviation positive">+${couplingOuterDeviation}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="parameter-name two-lines">
+                                <span class="icon mean">🔩</span>Средний
+                                <div class="empty-line">&nbsp;</div>
+                            </td>
+                            <td>
+                                <div class="diameter-value">${formatNumber(nippleMeanMm, 3)}</div>
+                                <div class="deviation negative">-${nippleMeanDeviation}</div>
+                            </td>
+                            <td>
+                                <div class="diameter-value">${formatNumber(couplingMeanMm, 3)}</div>
+                                <div class="deviation positive">+${couplingMeanDeviation}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="parameter-name two-lines">
+                                <span class="icon inner">🕳️</span>Внутренний
+                                <div class="empty-line">&nbsp;</div>
+                            </td>
+                            <td>
+                                <div class="diameter-value">${formatNumber(nippleInnerMm, 3)}</div>
+                                <div class="deviation negative">-${nippleInnerDeviation}</div>
+                            </td>
+                            <td>
+                                <div class="diameter-value">${formatNumber(couplingInnerMm, 3)}</div>
+                                <div class="deviation positive">+${couplingInnerDeviation}</div>
+                            </td>
+                        </tr>
+                        <tr class="height-row">
+                            <td class="parameter-name two-lines">
+                                <span class="icon height">📐</span>Высота профиля
+                                <div class="empty-line">&nbsp;</div>
+                            </td>
+                            <td colspan="2">
+                                <div class="height-value">${threadHeight.value} мм</div>
+                                <div class="deviation positive">+${threadHeight.deviation}</div>
+                                <div class="pitch-info">${Math.round(pitch)} ниток/дюйм</div>
+                            </td>
+                        </tr>
+                    `;
 
             document.getElementById('resultsBody').innerHTML = resultsHtml;
-            showResults();
+            showResults(); // Теперь кнопка появится
 
         } catch (error) {
             showError("Ошибка расчета: " + error.message);
         }
     }
 
-    // Обработчик кнопки "Поделиться результатом"
+    // Обработчик кнопки "Поделиться результатом" - ПЕРЕМЕЩЕН НИЖЕ
     tg.MainButton.onClick(() => {
         // Собираем структурированные данные
         const diameter = document.getElementById('diameter').value;
