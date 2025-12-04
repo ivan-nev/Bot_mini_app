@@ -1,121 +1,40 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Тест отправки Telegram</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Time Picker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 </head>
 <body>
-<h1>Тест отправки данных</h1>
-
-<div id="status"></div>
-
-<button onclick="testSendData()">Тест sendData</button>
-<button onclick="testCopy()">Тест копирования</button>
-<button onclick="showData()">Показать данные</button>
-
-<pre id="log"></pre>
+<button id="sendTimeBtn">Отправить текущее время</button>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    // Инициализация Telegram Web App
+    const tg = window.Telegram?.WebApp;
 
-    let log = document.getElementById('log');
-    let status = document.getElementById('status');
-
-    // Логирование
-    function addLog(msg, type = 'info') {
-        const time = new Date().toLocaleTimeString();
-        const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
-        log.innerHTML += `<span style="color:${color}">[${time}] ${msg}</span><br>`;
-        log.scrollTop = log.scrollHeight;
-    }
-
-    // Обновление статуса
-    function updateStatus(msg, type = 'info') {
-        status.innerHTML = msg;
-        status.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
-    }
-
-    // Инициализация
-    document.addEventListener('DOMContentLoaded', () => {
-        addLog(`Платформа: ${tg.platform}`);
-        addLog(`Версия: ${tg.version}`);
-        addLog(`initData: ${tg.initData ? 'да' : 'нет'}`);
-        addLog(`sendData доступен: ${typeof tg.sendData === 'function' ? 'да' : 'нет'}`);
-
-        if (tg.initDataUnsafe?.user) {
-            addLog(`Пользователь: ${tg.initDataUnsafe.user.first_name} (ID: ${tg.initDataUnsafe.user.id})`);
-        }
-    });
-
-    // Тест sendData
-    function testSendData() {
-        updateStatus('Отправка...', 'info');
-        const testData = {
-            action: "test",
-            platform: tg.platform,
-            time: new Date().toISOString(),
-            number: Math.random()
-        };
-
-        addLog(`Отправка: ${JSON.stringify(testData)}`);
-        addLog(`Размер: ${JSON.stringify(testData).length} байт`);
-
-        try {
-            const success = tg.sendData(JSON.stringify(testData));
-            if (success) {
-                addLog('sendData вернул true', 'success');
-                updateStatus('Успешно отправлено!', 'success');
-            } else {
-                addLog('sendData вернул false', 'error');
-                updateStatus('sendData вернул false', 'error');
-            }
-        } catch (e) {
-            addLog(`Ошибка: ${e.message}`, 'error');
-            updateStatus(`Ошибка: ${e.message}`, 'error');
-        }
-    }
-
-    // Тест копирования
-    function testCopy() {
-        const text = `Тестовые данные: ${new Date().toLocaleString()}\nПлатформа: ${tg.platform}\nID: ${tg.initDataUnsafe?.user?.id || 'нет'}`;
-
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-
-        try {
-            const success = document.execCommand('copy');
-            if (success) {
-                addLog('Скопировано в буфер', 'success');
-                updateStatus('Скопировано!', 'success');
-                tg.showAlert('Текст скопирован в буфер обмена');
-            } else {
-                addLog('Не удалось скопировать', 'error');
-                updateStatus('Ошибка копирования', 'error');
-            }
-        } catch (e) {
-            addLog(`Ошибка копирования: ${e.message}`, 'error');
-            updateStatus('Ошибка копирования', 'error');
+    function sendTime() {
+        if (!tg) {
+            alert('Работает только в Telegram!');
+            return;
         }
 
-        document.body.removeChild(textarea);
+        // Получаем текущее время
+        const now = new Date();
+        const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        // Отправляем время в формате "time:HH:MM"
+        tg.sendData(`time:${time}`);
+
+        // Закрываем Mini App
+        tg.close();
     }
 
-    // Показать все данные
-    function showData() {
-        const data = {
-            platform: tg.platform,
-            version: tg.version,
-            initData: tg.initData,
-            initDataUnsafe: tg.initDataUnsafe,
-            allKeys: Object.keys(tg).filter(k => typeof tg[k] === 'function')
-        };
-
-        addLog(`Все данные: ${JSON.stringify(data, null, 2)}`);
-        updateStatus('Данные показаны в логе', 'info');
+    // Инициализация приложения
+    if (tg) {
+        tg.ready();
+        document.getElementById('sendTimeBtn').addEventListener('click', sendTime);
+    } else {
+        document.body.innerHTML = '<p>Запустите в Telegram!</p>';
     }
 </script>
 </body>
