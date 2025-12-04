@@ -23,6 +23,10 @@ async def metric_calc(request:Request):
 async def metric_calc(request:Request):
     return templates.TemplateResponse("test.html", {"request": request})
 
+@app.get("/test2")
+async def metric_calc(request:Request):
+    return templates.TemplateResponse("test2.html", {"request": request})
+
 
 
 @app.get("/hello/{name}")
