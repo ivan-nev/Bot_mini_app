@@ -1,41 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Time Picker</title>
-    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 </head>
 <body>
-<button id="sendTimeBtn">Отправить текущее время</button>
+    <div class="Main">
+        <h1>Тестовое приложение</h1>
 
-<script>
-    // Инициализация Telegram Web App
-    const tg = window.Telegram?.WebApp;
-
-    function sendTime() {
-        if (!tg) {
-            alert('Работает только в Telegram!');
-            return;
-        }
-
-        // Получаем текущее время
-        const now = new Date();
-        const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-        // Отправляем время в формате "time:HH:MM"
-        tg.sendData(`time:${time}`);
-
-        // Закрываем Mini App
-        tg.close();
-    }
-
-    // Инициализация приложения
-    if (tg) {
-        tg.ready();
-        document.getElementById('sendTimeBtn').addEventListener('click', sendTime);
-    } else {
-        document.body.innerHTML = '<p>Запустите в Telegram!</p>';
-    }
-</script>
+        <p></p>
+        <button class="btn f-btn">Тест отправки данных</button>
+    </div>
+    <form class="test-form">
+        <input type="text" placeholder="Введите заголовок" class="title-inp">
+        <input type="text" placeholder="Введите описание" class="desc-inp">
+        <input type="text" placeholder="Введите текст" class="text-inp">
+        <button class="btn s-btn">Отправить</button>
+    </form>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        let tg = window.Telegram.WebApp;
+        let fBtn = document.getElementsByClassName("f-btn")
+        let sBtn = document.getElementsByClassName("s-btn")
+        fBtn.addEventListener("click", () => {
+            document.getElementsByClassName("Main").style.display = "none";
+            document.getElementsByClassName("test-form").style.display = "block";
+        });
+        sBtn.addEventListener("click", () => {
+            let description = document.getElementsByClassName("desc-inp");
+            let text = document.getElementsByClassName("text-inp");
+            let data = { title: title.value, desc: description.value, text: text.value }
+            tg.sendData(JSON.stringify(data));
+        });
+    </script>
 </body>
 </html>

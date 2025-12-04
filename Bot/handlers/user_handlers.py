@@ -19,13 +19,14 @@ async def start(message: Message):
 async def web_app_handler(message: Message):
     """Основной обработчик Web App данных"""
     # Получаем и парсим данные
-    data = json.loads(message.web_app_data.data)
-    print(data)
-    d=(data.get('time'))
-    date = datetime.fromisoformat(d)
-    date_uts = date.astimezone(uts)
-    await message.answer(f"{data.get('data_input_row')}\n\n"
-                         f"{data.get('answer_row')}\n\n"
-                         f'⏰Расчёт выполнен в {date_uts.strftime("%H:%M %d.%m.%Y")}',
-                         reply_markup=inline_menu.create_menu_thread())
+    print(message.web_app_data)
+    # data = json.loads(message.web_app_data.data)
+    # print(data)
+    # d=(data.get('time'))
+    # date = datetime.fromisoformat(d)
+    # date_uts = date.astimezone(uts)
+    # await message.answer(f"{data.get('data_input_row')}\n\n"
+    #                      f"{data.get('answer_row')}\n\n"
+    #                      f'⏰Расчёт выполнен в {date_uts.strftime("%H:%M %d.%m.%Y")}',
+    #                      reply_markup=inline_menu.create_menu_thread())
 
