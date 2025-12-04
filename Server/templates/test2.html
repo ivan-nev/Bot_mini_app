@@ -3,36 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Тест отправки данных в Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            color: #2c3e50;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            background: #d5f5e3;
+            border-radius: 8px;
+            color: #27ae60;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .error {
+            background: #fadbd8;
+            color: #c0392b;
+        }
+    </style>
 </head>
 <body>
-    <div class="Main">
-        <h1>Тестовое приложение</h1>
-
-        <p></p>
-        <button class="btn f-btn">Тест отправки данных</button>
-    </div>
-    <form class="test-form">
-        <input type="text" placeholder="Введите заголовок" class="title-inp">
-        <input type="text" placeholder="Введите описание" class="desc-inp">
-        <input type="text" placeholder="Введите текст" class="text-inp">
-        <button class="btn s-btn">Отправить</button>
+<div class="container">
+    <h1>📤 Отправка данных в Telegram Bot</h1>
+    <form id="dataForm">
+        <div class="form-group">
+            <label for="title">Заголовок</label>
+            <input type="text" id="title" placeholder="Введите заголовок" required>
+        </div>
+        <div class="form-group">
+            <label for="desc">Описание</label>
+            <input type="text" id="desc" placeholder="Введите описание">
+        </div>
+        <div class="form-group">
+            <label for="text">Текст сообщения</label>
+            <textarea id="text" placeholder="Введите текст сообщения" required></textarea>
+        </div>
+        <button type="submit" class="btn">Отправить в бот</button>
     </form>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        let tg = window.Telegram.WebApp;
-        let fBtn = document.getElementsByClassName("f-btn")
-        let sBtn = document.getElementsByClassName("s-btn")
-        fBtn.addEventListener("click", () => {
-            document.getElementsByClassName("Main").style.display = "none";
-            document.getElementsByClassName("test-form").style.display = "block";
-        });
-        sBtn.addEventListener("click", () => {
-            let description = document.getElementsByClassName("desc-inp");
-            let text = document.getElementsByClassName("text-inp");
-            let data = { title: title.value, desc: description.value, text: text.value }
+    <div id="status" class="status"></div>
+</div>
+
+<script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+
+    // Расширим окно приложения
+    tg.expand();
+
+    // Получаем элементы формы
+    const form = document.getElementById('dataForm');
+    const statusEl = document.getElementById('status');
+
+    // Обработчик отправки формы
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Собираем данные из формы
+        const data = {
+            title: document.getElementById('title').value.trim(),
+            desc: document.getElementById('desc').value.trim(),
+            text: document.getElementById('text').value.trim(),
+            timestamp: new Date().toISOString()
+        };
+
+        // Валидация
+        if (!data.title || !data.text) {
+            showStatus('⚠️ Заполните обязательные поля!', true);
+            return;
+        }
+
+        try {
+            // Отправка данных в Telegram бот
             tg.sendData(JSON.stringify(data));
+
+            // Показываем статус
+            showStatus('✅ Данные успешно отправлены в бот!');
+
+            // Очищаем форму
+            form.reset();
+
+        } catch (error) {
+            showStatus('❌ Ошибка отправки данных: ' + error.message, true);
+            console.error('Send data error:', error);
+        }
+    });
+
+    // Функция отображения статуса
+    function showStatus(message, isError = false) {
+        statusEl.textContent = message;
+        statusEl.className = 'status' + (isError ? ' error' : '');
+        statusEl.style.display = 'block';
+
+        // Скрыть через 5 секунд
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, 5000);
+    }
+
+    // Обработка закрытия приложения
+    tg.onEvent('back_button_pressed', function () {
+        tg.close();
+    });
+
+    // Добавим кнопку назад, если нужно
+    if (!tg.MainButton.isVisible) {
+        tg.MainButton.setText("Отправить");
+        tg.MainButton.show();
+        tg.MainButton.onClick(function () {
+            form.dispatchEvent(new Event('submit'));
         });
-    </script>
+    }
+</script>
 </body>
 </html>
