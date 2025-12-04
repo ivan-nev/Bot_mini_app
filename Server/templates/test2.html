@@ -2,534 +2,121 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест отправки данных Telegram</title>
+    <title>Тест отправки Telegram</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 15px;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            color: #333;
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 13px;
-        }
-
-        .info-box {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .info-item {
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .info-value {
-            color: #666;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            margin-bottom: 10px;
-        }
-
-        .button:hover {
-            transform: translateY(-2px);
-        }
-
-        .button.secondary {
-            background: #27ae60;
-        }
-
-        .button.tertiary {
-            background: #e74c3c;
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-        }
-
-        .result.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .result h3 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .result-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #27ae60;
-            margin-bottom: 10px;
-        }
-
-        .debug {
-            margin-top: 20px;
-            padding: 15px;
-            background: #2c3e50;
-            border-radius: 10px;
-            color: #ecf0f1;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .debug h3 {
-            color: #ecf0f1;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .log {
-            margin-bottom: 5px;
-            word-break: break-all;
-        }
-
-        .log.success {
-            color: #2ecc71;
-        }
-
-        .log.error {
-            color: #e74c3c;
-        }
-
-        .log.warning {
-            color: #f39c12;
-        }
-
-        .log.info {
-            color: #3498db;
-        }
-
-        .status {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .status.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>📱 Тест отправки Telegram</h1>
-        <p>Проверка работы WebApp на мобильных устройствах</p>
-    </div>
+<h1>Тест отправки данных</h1>
 
-    <div class="info-box" id="telegramInfo">
-        <div class="info-item">
-            <span class="info-label">Платформа:</span>
-            <span class="info-value" id="platform">Определение...</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Версия WebApp:</span>
-            <span class="info-value" id="version">Определение...</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">initData:</span>
-            <span class="info-value" id="initDataStatus">Проверка...</span>
-        </div>
-    </div>
+<div id="status"></div>
 
-    <div class="input-group">
-        <label for="testInput">Введите число для теста:</label>
-        <input type="number" id="testInput" placeholder="Введите любое число" value="42">
-    </div>
+<button onclick="testSendData()">Тест sendData</button>
+<button onclick="testCopy()">Тест копирования</button>
+<button onclick="showData()">Показать данные</button>
 
-    <button class="button" onclick="calculateTest()">Рассчитать (+1)</button>
-
-    <div class="result" id="resultContainer">
-        <h3>Результат:</h3>
-        <div class="result-value" id="resultValue">0</div>
-    </div>
-
-    <button class="button secondary" onclick="sendDataTest()">Отправить через sendData</button>
-    <button class="button tertiary" onclick="sendDataAlternative()">Альтернативная отправка</button>
-    <button class="button" onclick="testInitData()" style="background: #9b59b6;">Проверить initData</button>
-    <button class="button" onclick="clearLogs()" style="background: #7f8c8d;">Очистить логи</button>
-
-    <div class="debug">
-        <h3>Логирование:</h3>
-        <div id="logContainer"></div>
-    </div>
-</div>
+<pre id="log"></pre>
 
 <script>
-    // Инициализация Telegram WebApp
-    let tg = window.Telegram.WebApp;
-    let lastResult = null;
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-    // Функция для логирования
-    function log(message, type = 'info') {
-        const logContainer = document.getElementById('logContainer');
-        const logEntry = document.createElement('div');
-        logEntry.className = `log ${type}`;
-        logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        logContainer.appendChild(logEntry);
-        logContainer.scrollTop = logContainer.scrollHeight;
-        console.log(`[${type.toUpperCase()}] ${message}`);
+    let log = document.getElementById('log');
+    let status = document.getElementById('status');
+
+    // Логирование
+    function addLog(msg, type = 'info') {
+        const time = new Date().toLocaleTimeString();
+        const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+        log.innerHTML += `<span style="color:${color}">[${time}] ${msg}</span><br>`;
+        log.scrollTop = log.scrollHeight;
     }
 
-    // Функция для отображения статуса
-    function showStatus(message, type = 'info') {
-        const status = document.createElement('div');
-        status.className = `status ${type}`;
-        status.textContent = message;
-
-        const oldStatus = document.querySelector('.status');
-        if (oldStatus) {
-            oldStatus.remove();
-        }
-
-        document.querySelector('.container').insertBefore(status, document.querySelector('.info-box').nextSibling);
+    // Обновление статуса
+    function updateStatus(msg, type = 'info') {
+        status.innerHTML = msg;
+        status.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
     }
 
-    // Инициализация при загрузке
-    document.addEventListener('DOMContentLoaded', function () {
-        tg.expand();
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', () => {
+        addLog(`Платформа: ${tg.platform}`);
+        addLog(`Версия: ${tg.version}`);
+        addLog(`initData: ${tg.initData ? 'да' : 'нет'}`);
+        addLog(`sendData доступен: ${typeof tg.sendData === 'function' ? 'да' : 'нет'}`);
 
-        // Показываем информацию о WebApp
-        document.getElementById('platform').textContent = tg.platform || 'Не определено';
-        document.getElementById('version').textContent = tg.version || 'Не определена';
-
-        // Проверяем initData
-        if (tg.initData) {
-            document.getElementById('initDataStatus').textContent = 'Присутствует ✓';
-            document.getElementById('initDataStatus').style.color = '#27ae60';
-            log('initData присутствует', 'success');
-        } else {
-            document.getElementById('initDataStatus').textContent = 'Отсутствует ✗';
-            document.getElementById('initDataStatus').style.color = '#e74c3c';
-            log('initData отсутствует - это может быть причиной проблем', 'warning');
-        }
-
-        // Логируем дополнительные данные
-        log(`Платформа: ${tg.platform}`);
-        log(`Версия WebApp: ${tg.version}`);
-        log(`Инициализация завершена`, 'success');
-
-        // Проверяем, есть ли поддержка sendData
-        if (typeof tg.sendData === 'function') {
-            log('Функция sendData доступна', 'success');
-        } else {
-            log('Функция sendData НЕ доступна!', 'error');
-            showStatus('Ошибка: функция sendData не доступна', 'error');
+        if (tg.initDataUnsafe?.user) {
+            addLog(`Пользователь: ${tg.initDataUnsafe.user.first_name} (ID: ${tg.initDataUnsafe.user.id})`);
         }
     });
 
-    // Функция расчета
-    function calculateTest() {
-        const input = document.getElementById('testInput');
-        const value = parseFloat(input.value);
-
-        if (isNaN(value)) {
-            showStatus('Введите корректное число', 'error');
-            return;
-        }
-
-        const result = value + 1;
-        lastResult = {
-            input: value,
-            result: result,
-            timestamp: new Date().toISOString()
-        };
-
-        document.getElementById('resultValue').textContent = result;
-        document.getElementById('resultContainer').classList.add('active');
-
-        log(`Расчет выполнен: ${value} + 1 = ${result}`, 'success');
-        showStatus('Расчет выполнен', 'success');
-    }
-
-    // Основная функция отправки через sendData
-    function sendDataTest() {
-        if (!lastResult) {
-            showStatus('Сначала выполните расчет', 'warning');
-            return;
-        }
-
-        log('Попытка отправки через sendData...', 'info');
-        showStatus('Отправка через sendData...', 'warning');
-
-        const dataToSend = {
-            action: "test_send_data",
-            test_input: lastResult.input,
-            test_result: lastResult.result,
+    // Тест sendData
+    function testSendData() {
+        updateStatus('Отправка...', 'info');
+        const testData = {
+            action: "test",
             platform: tg.platform,
-            timestamp: lastResult.timestamp,
-            test_type: "direct_sendData"
+            time: new Date().toISOString(),
+            number: Math.random()
         };
 
-        log(`Отправляемые данные: ${JSON.stringify(dataToSend)}`, 'info');
-        log(`Размер данных: ${JSON.stringify(dataToSend).length} байт`, 'info');
+        addLog(`Отправка: ${JSON.stringify(testData)}`);
+        addLog(`Размер: ${JSON.stringify(testData).length} байт`);
 
         try {
-            // Попытка отправки
-            const success = tg.sendData(JSON.stringify(dataToSend));
-
+            const success = tg.sendData(JSON.stringify(testData));
             if (success) {
-                log('sendData вернул true - данные отправлены', 'success');
-                showStatus('Данные отправлены успешно!', 'success');
-
-                // Пытаемся закрыть WebApp
-                setTimeout(() => {
-                    try {
-                        tg.close();
-                        log('WebApp закрыт', 'info');
-                    } catch (e) {
-                        log(`Не удалось закрыть WebApp: ${e.message}`, 'warning');
-                    }
-                }, 1000);
+                addLog('sendData вернул true', 'success');
+                updateStatus('Успешно отправлено!', 'success');
             } else {
-                log('sendData вернул false - данные не отправлены', 'error');
-                showStatus('sendData вернул false. Данные не отправлены.', 'error');
+                addLog('sendData вернул false', 'error');
+                updateStatus('sendData вернул false', 'error');
             }
-        } catch (error) {
-            log(`Ошибка при вызове sendData: ${error.message}`, 'error');
-            showStatus(`Ошибка: ${error.message}`, 'error');
+        } catch (e) {
+            addLog(`Ошибка: ${e.message}`, 'error');
+            updateStatus(`Ошибка: ${e.message}`, 'error');
         }
     }
 
-    // Альтернативный метод отправки
-    function sendDataAlternative() {
-        if (!lastResult) {
-            showStatus('Сначала выполните расчет', 'warning');
-            return;
-        }
+    // Тест копирования
+    function testCopy() {
+        const text = `Тестовые данные: ${new Date().toLocaleString()}\nПлатформа: ${tg.platform}\nID: ${tg.initDataUnsafe?.user?.id || 'нет'}`;
 
-        log('Попытка альтернативной отправки...', 'info');
-        showStatus('Альтернативная отправка...', 'warning');
-
-        // Создаем упрощенные данные
-        const simpleData = {
-            action: "test_alternative",
-            input: lastResult.input,
-            result: lastResult.result,
-            time: new Date().toLocaleTimeString()
-        };
-
-        // Пробуем несколько методов
-
-        // Метод 1: sendData с упрощенными данными
-        try {
-            const success = tg.sendData(JSON.stringify(simpleData));
-            if (success) {
-                log('Альтернативные данные отправлены через sendData', 'success');
-                showStatus('Альтернативные данные отправлены', 'success');
-                return;
-            }
-        } catch (e) {
-            log(`Ошибка альтернативного sendData: ${e.message}`, 'warning');
-        }
-
-        // Метод 2: Попытка использовать openLink
-        try {
-            const message = `Тестовые данные: ${lastResult.input} → ${lastResult.result}`;
-            const encodedMessage = encodeURIComponent(message);
-
-            // Создаем ссылку для отправки сообщения боту
-            // ВАЖНО: замените YOUR_BOT_USERNAME на имя вашего бота
-            const botUsername = "calc_thread_bot"; // ЗАМЕНИТЕ ЭТО!
-            const link = `https://t.me/${botUsername}?start=test_${Date.now()}`;
-
-            tg.openLink(link);
-            log(`Открыта ссылка: ${link}`, 'info');
-            showStatus('Открываю Telegram для отправки...', 'success');
-        } catch (e) {
-            log(`Ошибка открытия ссылки: ${e.message}`, 'error');
-
-            // Метод 3: Копирование в буфер обмена
-            copyToClipboard(JSON.stringify(simpleData));
-        }
-    }
-
-    // Функция копирования в буфер обмена
-    function copyToClipboard(text) {
         const textarea = document.createElement('textarea');
         textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
         document.body.appendChild(textarea);
         textarea.select();
 
         try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                log('Данные скопированы в буфер обмена', 'success');
-                showStatus('Данные скопированы в буфер обмена', 'success');
+            const success = document.execCommand('copy');
+            if (success) {
+                addLog('Скопировано в буфер', 'success');
+                updateStatus('Скопировано!', 'success');
+                tg.showAlert('Текст скопирован в буфер обмена');
             } else {
-                log('Не удалось скопировать в буфер обмена', 'error');
-                showStatus('Не удалось скопировать. Пожалуйста, скопируйте вручную.', 'error');
+                addLog('Не удалось скопировать', 'error');
+                updateStatus('Ошибка копирования', 'error');
             }
-        } catch (err) {
-            log(`Ошибка копирования: ${err.message}`, 'error');
-            showStatus(`Ошибка: ${err.message}`, 'error');
+        } catch (e) {
+            addLog(`Ошибка копирования: ${e.message}`, 'error');
+            updateStatus('Ошибка копирования', 'error');
         }
 
         document.body.removeChild(textarea);
     }
 
-    // Функция проверки initData
-    function testInitData() {
-        log('Проверка initData...', 'info');
+    // Показать все данные
+    function showData() {
+        const data = {
+            platform: tg.platform,
+            version: tg.version,
+            initData: tg.initData,
+            initDataUnsafe: tg.initDataUnsafe,
+            allKeys: Object.keys(tg).filter(k => typeof tg[k] === 'function')
+        };
 
-        if (tg.initData) {
-            log(`initData присутствует (${tg.initData.length} символов)`, 'success');
-            log(`initDataUnsafe: ${JSON.stringify(tg.initDataUnsafe, null, 2)}`, 'info');
-            showStatus('initData присутствует ✓', 'success');
-        } else {
-            log('initData отсутствует!', 'error');
-            showStatus('initData отсутствует - причина проблем с отправкой', 'error');
-        }
-
-        // Проверяем наличие user
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            log(`Пользователь: ${tg.initDataUnsafe.user.first_name || 'Неизвестно'} (ID: ${tg.initDataUnsafe.user.id})`, 'success');
-        } else {
-            log('Информация о пользователе отсутствует', 'warning');
-        }
+        addLog(`Все данные: ${JSON.stringify(data, null, 2)}`);
+        updateStatus('Данные показаны в логе', 'info');
     }
-
-    // Функция очистки логов
-    function clearLogs() {
-        document.getElementById('logContainer').innerHTML = '';
-        log('Логи очищены', 'info');
-    }
-
-    // Для отладки: добавляем глобальные функции
-    window.debugTg = function () {
-        console.log('Telegram WebApp объект:', tg);
-        console.log('Платформа:', tg.platform);
-        console.log('Версия:', tg.version);
-        console.log('initData:', tg.initData);
-        console.log('initDataUnsafe:', tg.initDataUnsafe);
-        console.log('Доступные методы:', Object.keys(tg).filter(key => typeof tg[key] === 'function'));
-
-        log('Информация о WebApp выведена в консоль', 'info');
-    };
-
-    window.testSmallData = function () {
-        const smallData = {test: "hello", timestamp: Date.now()};
-        try {
-            const success = tg.sendData(JSON.stringify(smallData));
-            log(`Маленькие данные отправлены: ${success ? 'успешно' : 'ошибка'}`, success ? 'success' : 'error');
-        } catch (e) {
-            log(`Ошибка маленьких данных: ${e.message}`, 'error');
-        }
-    };
 </script>
 </body>
 </html>
