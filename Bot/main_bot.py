@@ -1,8 +1,7 @@
 import logging
 import sys
 from aiogram import Bot, Dispatcher
-from aiogram.types import Update
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, AiohttpWebServer
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp import web
 
 from handlers import user_handlers
@@ -21,30 +20,37 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 # Подключаем роутеры
 dp.include_router(user_handlers.router)
 
-# Путь, по которому Telegram будет присылать обновления
+# Путь для вебхука
 WEBHOOK_PATH = f"/bot/{CONFIG.tg_bot.token}"
-WEB_SERVER_HOST = "0.0.0.0"  # слушаем все интерфейсы
-WEB_SERVER_PORT = 8080       # порт бота (не 8000 — это для FastAPI)
+WEB_SERVER_HOST = "0.0.0.0"
+WEB_SERVER_PORT = 8080
+
 
 async def on_startup(bot: Bot) -> None:
     await bot.set_webhook(f"{CONFIG.tg_bot.webhook_url}{WEBHOOK_PATH}")
 
+
 async def on_shutdown(bot: Bot) -> None:
     await bot.delete_webhook(drop_pending_updates=True)
 
-def main() -> None:
-    # Регистрируем обработчики startup/shutdown
-    dp.startup.register(on_startup)
-    dp.shutdown.register(on_shutdown)
 
-    # Создаём AIOHTTP приложение
+def main() -> None:
+    # Создаём приложение
     app = web.Application()
+
+    # Регистрируем обработчик вебхука
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
-    AiohttpWebServer(
-        app=app,
-        host=WEB_SERVER_HOST,
-        port=WEB_SERVER_PORT,
-    ).run_app()
+
+    # Настройка graceful shutdown
+    setup_application(app, dp, bot=bot)
+
+    # Добавляем обработчики startup/shutdown
+    app.on_startup.append(lambda app: on_startup(bot))
+    app.on_shutdown.append(lambda app: on_shutdown(bot))
+
+    # Запускаем сервер
+    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+
 
 if __name__ == "__main__":
     main()
