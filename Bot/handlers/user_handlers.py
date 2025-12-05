@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message
-from Bot.keybords import inline_menu
+from keybords import inline_menu
 
 uts = timezone(timedelta(hours=5))
 
@@ -19,7 +19,11 @@ async def start(message: Message):
 async def web_app_handler(message: Message):
     """Основной обработчик Web App данных"""
     # Получаем и парсим данные
-    print(message.web_app_data)
+    d = message.web_app_data.data
+    print(d)
+    await message.answer(d)
+    # await message.answer()
+    # await message.answer(text=message.web_app_data)
     # data = json.loads(message.web_app_data.data)
     # print(data)
     # d=(data.get('time'))

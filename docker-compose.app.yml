@@ -26,6 +26,13 @@ services:
         max-size: "200k"
         max-file: "10"
 
+  bot:
+    build: ./Bot
+    container_name: telegram_bot
+    environment:
+      CONTEINER: True
+
+
 networks:
   proxy-network:
     external: true

@@ -1,5 +1,5 @@
 import requests
-from config.config import load_config
+from Bot.config.config import load_config
 
 config = load_config()
 TOKEN = config.tg_bot.token
