@@ -32,8 +32,8 @@ services:
     expose:
       - "8080"
     environment:
-      - TgBot__token=${BOT_TOKEN}
-      - webhook_url=https://bot.miniapp.calc.press
+      CONTEINER: True
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bot-http.entrypoints=web"
