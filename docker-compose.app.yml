@@ -29,8 +29,23 @@ services:
   bot:
     build: ./Bot
     container_name: telegram_bot
+    expose:
+      - "8080"
     environment:
-      CONTEINER: True
+      - TgBot__token=${BOT_TOKEN}
+      - webhook_url=https://bot.miniapp.calc.press
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bot-http.entrypoints=web"
+      - "traefik.http.routers.bot-http.rule=Host(`bot.miniapp.calc.press`)"
+      - "traefik.http.routers.bot-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.bot.entrypoints=websecure"
+      - "traefik.http.routers.bot.rule=Host(`bot.miniapp.calc.press`)"
+      - "traefik.http.routers.bot.tls.certresolver=le"
+      - "traefik.http.services.bot.loadbalancer.server.port=8080"
+    networks:
+      - proxy-network
+    restart: always
 
 
 networks:
