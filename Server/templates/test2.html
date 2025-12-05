@@ -1,148 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div>
+    <input id="title" placeholder="Заголовок"><br>
+    <textarea id="text" placeholder="Текст"></textarea><br>
+    <button onclick="send()">Отправить</button>
+    <button onclick="test()">Тест</button>
+    <p id="log"></p>
+</div>
+
 <script>
-    // Проверка платформы
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    // Инициализация Telegram WebApp
-    let tg;
-    try {
-        tg = window.Telegram?.WebApp;
-        if (!tg) {
-            throw new Error("WebApp не доступен");
-        }
-    } catch (e) {
-        document.getElementById('status').textContent = '❌ SDK не загружен!';
-        document.getElementById('status').style.display = 'block';
-        document.getElementById('status').className = 'status error';
-        console.error("Telegram WebApp SDK не доступен", e);
-        throw e;
-    }
-
-    // Расширяем окно и готовим WebApp
-    tg.expand();
+    const tg = window.Telegram.WebApp;
     tg.ready();
+    tg.expand();
 
-    // Логируем информацию о платформе
-    console.log('Информация о платформе:', {
-        platform: tg.platform,
-        version: tg.version,
-        isMobile: isMobile,
-        initData: tg.initData ? 'Есть' : 'Нет'
-    });
-
-    const form = document.getElementById('dataForm');
-    const statusEl = document.getElementById('status');
-
-    function showStatus(message, isError = false) {
-        console.log("Статус:", message);
-        statusEl.textContent = message;
-        statusEl.className = 'status' + (isError ? ' error' : '');
-        statusEl.style.display = 'block';
-        setTimeout(() => {
-            statusEl.style.display = 'none';
-        }, 5000);
+    function log(msg) {
+        console.log(msg);
+        document.getElementById('log').textContent = msg;
     }
 
-    // Основная функция отправки данных
-    function sendData(data) {
-        try {
-            const dataString = JSON.stringify(data);
-            console.log("Отправка данных:", dataString);
-
-            // Проверка доступности метода
-            if (!tg.sendData) {
-                showStatus('❌ Метод sendData не доступен', true);
-                // Пробуем альтернативный метод
-                tryAlternativeSend(data);
-                return;
-            }
-
-            // Отправляем данные
-            tg.sendData(dataString);
-            showStatus('✅ Данные отправлены в бот!');
-            form.reset();
-
-        } catch (error) {
-            console.error("Ошибка sendData:", error);
-            showStatus('❌ Ошибка отправки: ' + error.message, true);
-
-            // Пробуем альтернативный метод
-            tryAlternativeSend(data);
-        }
-    }
-
-    // Альтернативный метод отправки
-    function tryAlternativeSend(data) {
-        console.log("Пробуем альтернативный метод отправки...");
-
-        // Способ 1: Используем postMessage
-        try {
-            if (window.parent !== window) {
-                window.parent.postMessage({
-                    eventType: 'sendData',
-                    data: data
-                }, '*');
-                console.log("Отправлено через postMessage");
-            }
-        } catch (e) {
-            console.error("postMessage не сработал:", e);
-        }
-
-        // Способ 2: Показываем инструкцию пользователю
-        if (isMobile) {
-            setTimeout(() => {
-                showStatus('📱 На мобильном устройстве данные могут отправляться иначе. Проверьте настройки бота.', false);
-            }, 1000);
-        }
-    }
-
-    // Обработчик формы
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const title = document.getElementById('title').value.trim();
-        const desc = document.getElementById('desc').value.trim();
-        const text = document.getElementById('text').value.trim();
-
-        if (!title || !text) {
-            showStatus('⚠️ Заполните заголовок и текст!', true);
-            return;
-        }
-
+    function send() {
         const data = {
-            title,
-            desc,
-            text,
-            timestamp: new Date().toISOString(),
-            platform: isMobile ? 'mobile' : 'desktop'
+            title: document.getElementById('title').value,
+            text: document.getElementById('text').value
         };
 
-        sendData(data);
-    });
-
-    // Настройка интерфейса в зависимости от платформы
-    function setupInterface() {
-        // На мобильных скрываем кнопку формы и используем MainButton
-        if (isMobile && tg.MainButton) {
-            const formBtn = document.querySelector('.btn');
-            formBtn.style.display = 'none';
-
-            tg.MainButton.setText("Отправить");
-            tg.MainButton.show();
-            tg.MainButton.onClick(() => {
-                form.dispatchEvent(new Event('submit'));
-            });
-        }
-
-        // BackButton только на десктопе
-        if (tg.BackButton && !isMobile) {
-            tg.BackButton.show();
-            tg.BackButton.onClick(() => {
-                tg.close();
-            });
+        if (tg.sendData) {
+            tg.sendData(JSON.stringify(data));
+            log('Отправлено: ' + JSON.stringify(data).substring(0, 50));
+        } else {
+            log('sendData недоступен');
         }
     }
 
-    // Инициализируем интерфейс после загрузки
-    document.addEventListener('DOMContentLoaded', setupInterface);
-    tg.onEvent('ready', setupInterface);
+    function test() {
+        log('Версия: ' + tg.version + ', Платформа: ' + tg.platform);
+    }
 </script>
+</body>
+</html>
