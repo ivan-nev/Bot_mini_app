@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   vikunja:
-    image: vikunja/vikunja
+    image: vikunja/vikunja:latest
     container_name: vikunja_app
     env_file:
       - .env
@@ -34,6 +34,7 @@ services:
       - VIKUNJA_SERVICE_MAILCONFIRMATION_ENABLE=true  #включает отправку писем с подтверждением
       - VIKUNJA_SERVICE_MAILCONFIRMATION_REQUIRE=true #требует подтверждения email для активации
       - VIKUNJA_SERVICE_MAILCONFIRMATION_VALIDITY=24  #срок действия ссылки подтверждения в часах (опционально)
+      - VIKUNJA_SERVICE_MAILCONFIRMATION_FORCE=true
 
       # НАСТРОЙКИ S3 ДЛЯ CLOUD.RU
 #      - VIKUNJA_FILES_STORAGE_TYPE=s3
