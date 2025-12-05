@@ -1,0 +1,14 @@
+<button onclick="testSend()" style="margin-top:10px;">Тест отправки</button>
+
+<script>
+function testSend() {
+    const testData = {test: "mobile", time: new Date().toISOString()};
+    console.log("Тестовая отправка:", testData);
+    if (tg.sendData) {
+        tg.sendData(JSON.stringify(testData));
+        showStatus('✅ Тестовые данные отправлены');
+    } else {
+        showStatus('❌ sendData не доступен', true);
+    }
+}
+</script>

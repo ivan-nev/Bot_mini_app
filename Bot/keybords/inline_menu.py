@@ -2,10 +2,11 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 LEXICON_BUTTON = {
-    'StubACME': "https://miniapp.calc.press/stubacme-calc",
-    'Metric': "https://miniapp.calc.press/metric-calc",
-    'test': "https://miniapp.calc.press/test",
-    'test2': "https://miniapp.calc.press/test2"
+    "StubACME": "https://miniapp.calc.press/stubacme-calc",
+    "Metric": "https://miniapp.calc.press/metric-calc",
+    "test": "https://miniapp.calc.press/test",
+    "test2": "https://miniapp.calc.press/test2",
+    "test_bt": "https://miniapp.calc.press",
 }
 
 

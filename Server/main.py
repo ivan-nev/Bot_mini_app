@@ -9,7 +9,7 @@ templates = Jinja2Templates(directory='Server/templates')
 # app.mount("Server/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def root(request: Request):
-    return templates.TemplateResponse("triangl_calc.html", {"request": request})
+    return templates.TemplateResponse("test_bt.html", {"request": request})
 
 @app.get("/stubacme-calc")
 async def stub_acme_calc(request:Request):
