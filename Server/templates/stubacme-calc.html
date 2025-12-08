@@ -431,6 +431,8 @@
         const sign = isPositive ? '+' : '-';
         return `${value.toFixed(3)} ${sign}${Math.abs(deviation).toFixed(3)}`;
     }
+    // Сначала — инициализация
+    Telegram.WebApp.ready();
 
     // Инициализация Telegram Web App
     let tg = window.Telegram.WebApp;
