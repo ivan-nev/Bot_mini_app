@@ -107,7 +107,7 @@ async def submit_metric_data(data: WebAppData):
     # Ваш сервер делает HTTPS POST запрос к API Telegram
     send_text = f"Я получил данные от Mini App:\nValue: {result_value}"
 
-    telegram_api_url = f"api.telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage"
+    telegram_api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         'chat_id': user_id,
         'text': send_text
