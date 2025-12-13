@@ -3,32 +3,44 @@ html
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mini App Data Test</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        // Убедитесь, что Telegram WebApp SDK готов
-        Telegram.WebApp.ready();
-
-        function sendTestData() {
-            const dataInput = document.getElementById('data_input');
-            const dataToSend = dataInput.value;
-
-            if (dataToSend) {
-                // Отправляем данные боту и закрываем Mini App
-                Telegram.WebApp.sendData(dataToSend);
-            } else {
-                alert("Please enter some data.");
-            }
-        }
-
-        // Пример использования главной кнопки Telegram (опционально)
-        Telegram.WebApp.MainButton.setText('Отправить данные').show().onClick(sendTestData);
-
-    </script>
+    <title>Metric Calc Post Test</title>
+    <script src="telegram.org"></script>
 </head>
 <body>
-    <h1>Тест отправки данных в бота</h1>
-    <input type="text" id="data_input" placeholder="Введите данные для отправки">
-    <button onclick="sendTestData()">Отправить через обычную кнопку</button>
+<h1>Метрический калькулятор</h1>
+<input type="number" id="value1" placeholder="Значение 1">
+<button onclick="sendResultToServer()">Отправить результат на сервер</button>
+
+<script>
+    Telegram.WebApp.ready();
+
+    async function sendResultToServer() {
+        const value1 = document.getElementById('value1').value;
+
+        // Получаем данные инициализации от Telegram для валидации на сервере
+        const initData = Telegram.WebApp.initData;
+
+        const response = await fetch('/api/submit-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                value: value1,
+                // Передаем данные инициализации в теле запроса
+                initData: initData
+            }),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            alert("Сервер успешно принял данные и ответил боту.");
+            // Опционально закрываем Mini App после успеха
+            Telegram.WebApp.close();
+        } else {
+            alert("Ошибка при отправке данных на сервер.");
+        }
+    }
+</script>
 </body>
 </html>
