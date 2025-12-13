@@ -69,6 +69,10 @@ async def get_favicon():
 async def root(request: Request):
     return templates.TemplateResponse("test_bt.html", {"request": request})
 
+@app.get("/test")
+async def metric_calc(request: Request):
+    return templates.TemplateResponse("test.html", {"request": request})
+
 
 # Обновленный маршрут для отображения калькулятора
 @app.get("/metric-calc")
