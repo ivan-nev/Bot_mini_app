@@ -11,7 +11,7 @@ services:
       # HTTP to HTTPS redirect
       - "traefik.http.routers.app-http.entrypoints=web"
       - "traefik.http.routers.app-http.rule=Host(`miniapp.calc.press`)"  # ← БЕЗ подчеркивания
-      - "traefik.http.routers.app-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.app-http.middlewares=redirect-to-https@file"
       # HTTPS с SSL
       - "traefik.http.routers.app.entrypoints=websecure"
       - "traefik.http.routers.app.rule=Host(`miniapp.calc.press`)"  # ← БЕЗ подчеркивания
@@ -38,7 +38,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.bot-http.entrypoints=web"
       - "traefik.http.routers.bot-http.rule=Host(`bot.miniapp.calc.press`)"
-      - "traefik.http.routers.bot-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.bot-http.middlewares=redirect-to-https@file"
       - "traefik.http.routers.bot.entrypoints=websecure"
       - "traefik.http.routers.bot.rule=Host(`bot.miniapp.calc.press`)"
       - "traefik.http.routers.bot.tls.certresolver=le"
