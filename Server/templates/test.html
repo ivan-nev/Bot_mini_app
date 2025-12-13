@@ -3,544 +3,486 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Mini App Test</title>
+    <title>Telegram Mini App Test FIX</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background: #1a1a1a;
+            color: white;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            width: 100%;
-            max-width: 600px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            margin-top: 20px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
+            color: #8774e1;
+            margin-bottom: 20px;
         }
 
-        .status-card {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border-left: 5px solid #4CAF50;
-        }
-
-        .status-card.error {
-            border-left-color: #f44336;
-        }
-
-        .status-card.warning {
-            border-left-color: #ff9800;
-        }
-
-        .log-container {
-            background: #1a1a1a;
-            color: #00ff00;
+        .card {
+            background: #2d2d2d;
             border-radius: 10px;
             padding: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            height: 300px;
-            overflow-y: auto;
-            margin-bottom: 25px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 18px 40px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            width: 100%;
             margin-bottom: 15px;
         }
 
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        .card.success {
+            border-left: 5px solid #4CAF50;
         }
 
-        .button:active {
-            transform: translateY(0);
+        .card.warning {
+            border-left: 5px solid #ff9800;
         }
 
-        .button.secondary {
-            background: #6c757d;
+        .card.error {
+            border-left: 5px solid #f44336;
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .info-item {
-            background: #f8f9fa;
+        .log {
+            background: #000;
+            color: #0f0;
             padding: 15px;
-            border-radius: 10px;
-            text-align: center;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
         }
 
-        .info-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
+        .button {
+            background: #8774e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
         }
 
-        .info-value {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
+        .button:hover {
+            opacity: 0.9;
         }
 
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none;
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+        .methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
         }
 
-        .log-entry {
-            margin-bottom: 8px;
-            line-height: 1.4;
+        .method-btn {
+            background: #3a3a3a;
         }
 
-        .log-time {
-            color: #888;
-        }
-
-        .log-level-info {
-            color: #4CAF50;
-        }
-
-        .log-level-warn {
-            color: #ff9800;
-        }
-
-        .log-level-error {
-            color: #f44336;
-        }
-
-        .log-level-debug {
-            color: #2196F3;
+        .method-btn.active {
+            background: #8774e1;
         }
     </style>
 </head>
 <body>
-<h1 style="color: white;">🔍 Тест Mini App Telegram</h1>
-
 <div class="container">
-    <div id="statusCard" class="status-card">
-        <h2>Статус: Инициализация...</h2>
-        <p id="statusText">Проверяем окружение...</p>
+    <h1>🛠️ Тест Mini App с исправлением для Chrome</h1>
+
+    <div id="statusCard" class="card">
+        <h3 id="statusTitle">Инициализация...</h3>
+        <p id="statusText">Определяем платформу и браузер...</p>
     </div>
 
-    <div class="info-grid">
-        <div class="info-item">
-            <div class="info-label">Платформа</div>
-            <div id="platform" class="info-value">-</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Браузер</div>
-            <div id="browser" class="info-value">-</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Telegram API</div>
-            <div id="telegramApi" class="info-value">-</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Версия WebApp</div>
-            <div id="webappVersion" class="info-value">-</div>
-        </div>
+    <div class="card">
+        <h3>Информация о платформе</h3>
+        <p><strong>Браузер:</strong> <span id="browserInfo">-</span></p>
+        <p><strong>Платформа:</strong> <span id="platformInfo">-</span> (<span id="platformType">-</span>)</p>
+        <p><strong>Telegram WebApp версия:</strong> <span id="versionInfo">-</span></p>
+        <p><strong>Режим:</strong> <span id="modeInfo">-</span></p>
     </div>
 
-    <button id="sendButton" class="button" disabled>
-        Отправить "OK" боту
-    </button>
-
-    <button id="testRequest" class="button secondary">
-        Тест обычного запроса (без Telegram API)
-    </button>
-
-    <div class="loader" id="loader"></div>
-
-    <div class="log-container" id="logContainer">
-        [Лог будет отображаться здесь]
+    <div class="card warning">
+        <h3>⚠️ Проблема с Chrome</h3>
+        <p>В десктопной версии Telegram Web (платформа "web") метод sendData() может не работать корректно.</p>
+        <p><strong>Решение:</strong> Используем альтернативные методы отправки данных.</p>
     </div>
 
-    <button onclick="clearLogs()" class="button secondary" style="background: #dc3545;">
-        Очистить логи
-    </button>
+    <div class="card">
+        <h3>Методы отправки данных</h3>
+        <div class="methods">
+            <button id="method1" class="button method-btn active" onclick="selectMethod(1)">Метод 1: sendData()</button>
+            <button id="method2" class="button method-btn" onclick="selectMethod(2)">Метод 2: postMessage</button>
+            <button id="method3" class="button method-btn" onclick="selectMethod(3)">Метод 3: iframe</button>
+            <button id="method4" class="button method-btn" onclick="selectMethod(4)">Метод 4: fetch + initData</button>
+        </div>
+
+        <button id="sendBtn" class="button" style="background: #4CAF50; padding: 15px 30px; font-size: 16px;"
+                onclick="sendData()">
+            📤 Отправить данные выбранным методом
+        </button>
+
+        <button id="debugBtn" class="button" style="background: #2196F3;" onclick="debugInfo()">
+            🔍 Отладка initData
+        </button>
+    </div>
+
+    <div class="card">
+        <h3>Логи отправки</h3>
+        <div id="log" class="log">[Логи будут здесь]</div>
+        <button class="button" onclick="clearLog()" style="background: #f44336;">Очистить логи</button>
+    </div>
+
+    <div class="card">
+        <h3>Анализ проблемы</h3>
+        <p><strong>Проблема:</strong> В Chrome/Telegram Web (платформа "web") sendData() не всегда вызывает update у
+            бота.</p>
+        <p><strong>Причина:</strong> Десктопный Telegram Web использует другой механизм связи между iframe и
+            родительским окном.</p>
+        <p><strong>Решение:</strong> Нужно использовать postMessage API или отправлять данные через сервер бота
+            напрямую.</p>
+    </div>
 </div>
 
 <script>
-    const logs = [];
     let telegram = null;
-    let isTelegramWebApp = false;
+    let selectedMethod = 1;
+    let logs = [];
 
-    function log(level, message, data = null) {
+    function log(msg, type = 'info') {
         const timestamp = new Date().toLocaleTimeString();
-        const logEntry = {
-            timestamp,
-            level,
-            message,
-            data
-        };
-
+        const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${msg}`;
         logs.push(logEntry);
 
-        const logElement = document.getElementById('logContainer');
-        const logEntryElement = document.createElement('div');
-        logEntryElement.className = 'log-entry';
-        logEntryElement.innerHTML = `
-                <span class="log-time">[${timestamp}]</span>
-                <span class="log-level-${level}"> ${level.toUpperCase()}: </span>
-                ${message}
-                ${data ? `<br><small>${JSON.stringify(data, null, 2)}</small>`
-    :
-        ''
+        const logDiv = document.getElementById('log');
+        logDiv.innerHTML = logs.join('\n') + '\n' + logDiv.innerHTML;
+
+        console.log(`[${type}]`, msg);
     }
 
-    `;
+    function clearLog() {
+        logs = [];
+        document.getElementById('log').innerHTML = '[Логи очищены]';
+    }
 
-            logElement.appendChild(logEntryElement);
-            logElement.scrollTop = logElement.scrollHeight;
+    function updateStatus(title, text, type = 'info') {
+        const card = document.getElementById('statusCard');
+        const titleEl = document.getElementById('statusTitle');
+        const textEl = document.getElementById('statusText');
 
-            console.log(`[${level}]${message}`, data || '');
+        titleEl.textContent = title;
+        textEl.textContent = text;
+
+        card.className = 'card';
+        if (type === 'success') card.classList.add('success');
+        if (type === 'warning') card.classList.add('warning');
+        if (type === 'error') card.classList.add('error');
+    }
+
+    function selectMethod(method) {
+        selectedMethod = method;
+
+        // Сброс всех кнопок
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById(`method${i}`).classList.remove('active');
         }
 
-        function updateStatus(status, message, isError = false) {
-            const statusCard = document.getElementById('statusCard');
-            const statusText = document.getElementById('statusText');
+        // Активация выбранной
+        document.getElementById(`method${method}`).classList.add('active');
 
-            statusCard.className = `
-    status - card${isError ? 'error' : ''}`;
-            document.querySelector('#statusCard h2').textContent = `
-    Статус: ${status}`;
-            statusText.textContent = message;
+        const methods = {
+            1: 'sendData() - стандартный метод Telegram WebApp',
+            2: 'postMessage - прямой вызов родительского окна',
+            3: 'iframe - создание скрытого iframe',
+            4: 'fetch - прямая отправка на сервер бота'
+        };
+
+        log(`Выбран метод ${method}: ${methods[method]}`);
+    }
+
+    function debugInfo() {
+        if (!telegram) {
+            log('Telegram WebApp не инициализирован', 'error');
+            return;
         }
 
-        function detectBrowser() {
-            const userAgent = navigator.userAgent;
-            let browser = 'Неизвестно';
+        log('=== ДЕБАГ ИНФОРМАЦИЯ ===', 'debug');
+        log(`initData: ${telegram.initData ? 'ЕСТЬ (' + telegram.initData.length + ' chars)' : 'НЕТ'}`, 'debug');
+        log(`initDataUnsafe: ${JSON.stringify(telegram.initDataUnsafe, null, 2)}`, 'debug');
+        log(`Platform: ${telegram.platform}`, 'debug');
+        log(`Version: ${telegram.version}`, 'debug');
+        log(`ColorScheme: ${telegram.colorScheme}`, 'debug');
+        log(`Вся информация доступна в console.log`, 'debug');
 
-            if (userAgent.includes('YaBrowser') || userAgent.includes('Yowser')) {
-                browser = 'Yandex Browser';
-            } else if (userAgent.includes('Chrome')) {
-                browser = 'Google Chrome';
-            } else if (userAgent.includes('Firefox')) {
-                browser = 'Firefox';
-            } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-                browser = 'Safari';
-            } else if (userAgent.includes('Edg')) {
-                browser = 'Microsoft Edge';
-            }
+        console.log('=== TELEGRAM WEBAPP DEBUG ===');
+        console.log('Full Telegram.WebApp object:', telegram);
+        console.log('initData:', telegram.initData);
+        console.log('initDataUnsafe:', telegram.initDataUnsafe);
+        console.log('Platform:', telegram.platform);
+        console.log('UserAgent:', navigator.userAgent);
+        console.log('URL hash:', window.location.hash.substring(0, 100) + '...');
+    }
 
-            document.getElementById('browser').textContent = browser;
-            log('info', `
-    Определен
-    браузер: ${browser}`);
-            return browser;
+    function sendData() {
+        if (!telegram) {
+            updateStatus('Ошибка', 'Telegram WebApp не инициализирован', 'error');
+            return;
         }
 
-        function detectPlatform() {
-            const userAgent = navigator.userAgent;
-            let platform = 'Неизвестно';
+        const data = {
+            command: 'test',
+            message: 'OK from Mini App',
+            timestamp: Date.now(),
+            platform: telegram.platform,
+            method: selectedMethod,
+            test_id: Math.random().toString(36).substring(7)
+        };
 
-            if (/android/i.test(userAgent)) {
-                platform = 'Android';
-            } else if (/iPad|iPhone|iPod/.test(userAgent)) {
-                platform = 'iOS';
-            } else if (/Win/.test(userAgent)) {
-                platform = 'Windows';
-            } else if (/Mac/.test(userAgent)) {
-                platform = 'macOS';
-            } else if (/Linux/.test(userAgent)) {
-                platform = 'Linux';
-            }
+        log(`Начинаем отправку методом ${selectedMethod}...`, 'info');
+        updateStatus('Отправка...', 'Пытаемся отправить данные...', 'warning');
 
-            document.getElementById('platform').textContent = platform;
-            log('info', `
-    Определена
-    платформа: ${platform}`);
-            return platform;
+        switch (selectedMethod) {
+            case 1:
+                sendViaTelegramAPI(data);
+                break;
+            case 2:
+                sendViaPostMessage(data);
+                break;
+            case 3:
+                sendViaIframe(data);
+                break;
+            case 4:
+                sendViaFetch(data);
+                break;
         }
+    }
 
-        function initTelegramWebApp() {
-            log('info', 'Проверка доступности Telegram WebApp API...');
+    // Метод 1: Стандартный Telegram WebApp API
+    function sendViaTelegramAPI(data) {
+        try {
+            log('Используем telegram.sendData()...', 'info');
+            telegram.sendData(JSON.stringify(data));
+            log('✅ sendData() вызван успешно', 'success');
+            updateStatus('Отправлено', 'Данные отправлены через Telegram API', 'success');
 
-            if (window.Telegram && window.Telegram.WebApp) {
-                telegram = window.Telegram.WebApp;
-                isTelegramWebApp = true;
-
-                log('info', 'Telegram WebApp API обнаружен');
-                log('debug', 'Объект Telegram.WebApp:', {
-                    initData: telegram.initData,
-                    initDataUnsafe: telegram.initDataUnsafe,
-                    platform: telegram.platform,
-                    version: telegram.version,
-                    colorScheme: telegram.colorScheme,
-                    themeParams: telegram.themeParams
+            // Показываем всплывающее окно для обратной связи
+            setTimeout(() => {
+                telegram.showPopup({
+                    title: 'Данные отправлены',
+                    message: 'Метод: sendData()\nПроверьте, получил ли бот update.',
+                    buttons: [{type: 'default', text: 'OK'}]
                 });
+            }, 500);
 
-                document.getElementById('telegramApi').textContent = 'Доступен';
-                document.getElementById('webappVersion').textContent = telegram.version;
-
-                updateStatus('Готов', 'Telegram WebApp API загружен успешно');
-
-                telegram.ready();
-                telegram.expand();
-
-                const sendButton = document.getElementById('sendButton');
-                sendButton.disabled = false;
-                sendButton.innerHTML = '📨 Отправить "OK" боту через Telegram API';
-
-                log('info', 'Кнопка отправки активирована');
-
-            } else {
-                log('warn', 'Telegram WebApp API не обнаружен. Приложение запущено вне Telegram?');
-                document.getElementById('telegramApi').textContent = 'Недоступен';
-                document.getElementById('webappVersion').textContent = 'N/A';
-
-                updateStatus('Ограниченный режим', 'Telegram WebApp API не обнаружен. Запустите приложение внутри Telegram.', true);
-
-                log('info', 'Вы можете использовать тестовый запрос для проверки сети');
-            }
+        } catch (error) {
+            log(`❌ Ошибка sendData(): ${error.message}`, 'error');
+            updateStatus('Ошибка', `sendData() не сработал: ${error.message}`, 'error');
         }
+    }
 
-        async function sendViaTelegramAPI() {
-            if (!isTelegramWebApp || !telegram) {
-                log('error', 'Попытка отправить через Telegram API, но API не доступен');
-                updateStatus('Ошибка', 'Telegram API не доступен', true);
-                return;
+    // Метод 2: postMessage родительскому окну
+    function sendViaPostMessage(data) {
+        try {
+            log('Пытаемся отправить через postMessage...', 'info');
+
+            // Это специальный формат для Telegram Web
+            const message = {
+                eventType: 'web_app_data',
+                eventData: JSON.stringify(data)
+            };
+
+            // Пытаемся отправить разными способами
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage(message, '*');
+                log('✅ postMessage отправлен в window.parent', 'success');
             }
 
-            const loader = document.getElementById('loader');
-            const sendButton = document.getElementById('sendButton');
+            if (window.top && window.top !== window) {
+                window.top.postMessage(message, '*');
+                log('✅ postMessage отправлен в window.top', 'success');
+            }
 
-            loader.style.display = 'block';
-            sendButton.disabled = true;
-            sendButton.innerHTML = 'Отправка...';
+            // Также пробуем отправить через TelegramWebviewProxy (если доступен)
+            if (typeof window.TelegramWebviewProxy !== 'undefined') {
+                window.TelegramWebviewProxy.postEvent('web_app_data', JSON.stringify(data));
+                log('✅ Использован TelegramWebviewProxy', 'success');
+            }
 
-            log('info', 'Начинаем отправку через Telegram WebApp API...');
-            log('debug', 'Данные для отправки:', {
-                command: 'send_ok',
-                timestamp: Date.now(),
-                test_data: 'OK from Mini App'
+            updateStatus('Отправлено', 'Данные отправлены через postMessage', 'success');
+
+            telegram.showPopup({
+                title: 'PostMessage отправлен',
+                message: 'Проверьте консоль браузера на наличие ошибок CORS.',
+                buttons: [{type: 'default', text: 'OK'}]
             });
 
-            try {
-                // Метод 1: Используем sendData для отправки данных обратно в бота
-                telegram.sendData(JSON.stringify({
-                    command: 'send_ok',
-                    timestamp: Date.now(),
-                    test_data: 'OK from Mini App',
-                    browser: detectBrowser(),
-                    platform: detectPlatform()
-                }));
-
-                log('info', 'Данные отправлены через telegram.sendData()');
-                updateStatus('Отправлено', 'Данные отправлены через Telegram API');
-
-                // Метод 2: Показываем всплывающее окно для подтверждения
-                telegram.showPopup({
-                    title: 'Успешно!',
-                    message: 'Данные "OK" отправлены боту через Telegram WebApp API.',
-                    buttons: [{ type: 'ok' }]
-                });
-
-            } catch (error) {
-                log('error', 'Ошибка при отправке через Telegram API:', error);
-                updateStatus('Ошибка отправки', error.message, true);
-
-                telegram.showPopup({
-                    title: 'Ошибка!',
-                    message: `
-    Не
-    удалось
-    отправить
-    данные: ${error.message}`,
-                    buttons: [{ type: 'ok' }]
-                });
-            } finally {
-                loader.style.display = 'none';
-                sendButton.disabled = false;
-                sendButton.innerHTML = '📨 Отправить "OK" боту через Telegram API';
-
-                // Логируем состояние initData (это важно для отладки)
-                log('debug', 'Текущий initData:', telegram.initData);
-                log('debug', 'Текущий initDataUnsafe:', telegram.initDataUnsafe);
-
-                if (telegram.initData) {
-                    log('info', 'InitData присутствует, длина: ' + telegram.initData.length);
-                } else {
-                    log('warn', 'InitData отсутствует! Это может быть причиной проблемы в Chrome');
-                }
-            }
+        } catch (error) {
+            log(`❌ Ошибка postMessage: ${error.message}`, 'error');
+            updateStatus('Ошибка', `postMessage не сработал: ${error.message}`, 'error');
         }
+    }
 
-        async function testRegularRequest() {
-            const loader = document.getElementById('loader');
-            const testButton = document.getElementById('testRequest');
+    // Метод 3: Создание скрытого iframe
+    function sendViaIframe(data) {
+        try {
+            log('Создаем скрытый iframe для отправки...', 'info');
 
-            loader.style.display = 'block';
-            testButton.disabled = true;
-            testButton.innerHTML = 'Тестирование...';
+            // Этот метод работает через создание временного iframe
+            // который загружает специальный URL с данными
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
 
-            log('info', 'Начинаем тестовый HTTP-запрос...');
+            // Если у вас есть endpoint на сервере бота
+            // const url = `https://ваш-сервер.com/webhook?data=${encodeURIComponent(JSON.stringify(data))}`;
+            // iframe.src = url;
 
-            try {
-                // Тестовый запрос к публичному API для проверки сети
-                const response = await fetch('https://httpbin.org/post', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        test: 'OK',
-                        message: 'Тестовый запрос из Mini App',
-                        timestamp: Date.now(),
-                        browser: detectBrowser(),
-                        platform: detectPlatform(),
-                        userAgent: navigator.userAgent
-                    })
-                });
+            // Для теста просто используем about:blank
+            iframe.src = 'about:blank';
 
-                const data = await response.json();
+            document.body.appendChild(iframe);
 
-                log('info', 'Тестовый HTTP-запрос выполнен успешно');
-                log('debug', 'Ответ от сервера:', data);
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+                log('✅ Iframe создан и удален', 'success');
+            }, 1000);
 
-                updateStatus('Сеть работает', 'Обычные HTTP-запросы функционируют корректно');
+            updateStatus('Iframe создан', 'Метод iframe выполнен (требует серверной части)', 'warning');
 
-                // Показываем результат в попапе если в Telegram
-                if (isTelegramWebApp) {
-                    telegram.showPopup({
-                        title: 'Сеть работает!',
-                        message: 'Обычные HTTP-запросы отправляются успешно.',
-                        buttons: [{ type: 'ok' }]
-                    });
-                } else {
-                    alert('Тестовый запрос выполнен успешно! Проверьте логи для деталей.');
-                }
+            telegram.showPopup({
+                title: 'Iframe метод',
+                message: 'Этот метод требует настройки серверного endpoint. Данные не отправлены.',
+                buttons: [{type: 'default', text: 'OK'}]
+            });
 
-            } catch (error) {
-                log('error', 'Ошибка при тестовом HTTP-запросе:', error);
-                updateStatus('Ошибка сети', 'Не удалось выполнить HTTP-запрос', true);
-
-                if (isTelegramWebApp) {
-                    telegram.showPopup({
-                        title: 'Ошибка сети!',
-                        message: `
-    HTTP - запрос
-    не
-    удался: ${error.message}`,
-                        buttons: [{ type: 'ok' }]
-                    });
-                } else {
-                    alert(`
-    Ошибка
-    сети: ${error.message}`);
-                }
-            } finally {
-                loader.style.display = 'none';
-                testButton.disabled = false;
-                testButton.innerHTML = 'Тест обычного запроса (без Telegram API)';
-            }
+        } catch (error) {
+            log(`❌ Ошибка iframe: ${error.message}`, 'error');
         }
+    }
 
-        function clearLogs() {
-            const logContainer = document.getElementById('logContainer');
-            logContainer.innerHTML = '[Логи очищены]';
-            logs.length = 0;
-            log('info', 'Логи очищены');
-        }
+    // Метод 4: Прямой fetch на сервер бота
+    function sendViaFetch(data) {
+        // ВАЖНО: Этот метод требует настройки CORS на вашем сервере
+        // и endpoint для приема данных от мини-приложения
 
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            log('info', 'Страница загружена');
-            log('debug', 'UserAgent:', navigator.userAgent);
-            log('debug', 'URL:', window.location.href);
-            log('debug', 'Referrer:', document.referrer);
+        log('⚠️ Метод fetch требует настройки сервера', 'warning');
 
-            detectBrowser();
-            detectPlatform();
-            initTelegramWebApp();
+        // Пример URL вашего бота (замените на ваш)
+        const botWebhookUrl = 'https://ваш-домен.com/webhook/mini-app';
 
-            // Назначаем обработчики кнопок
-            document.getElementById('sendButton').addEventListener('click', sendViaTelegramAPI);
-            document.getElementById('testRequest').addEventListener('click', testRegularRequest);
+        // Добавляем initData для аутентификации
+        data.initData = telegram.initData;
+        data.initDataUnsafe = telegram.initDataUnsafe;
 
-            // Добавляем обработчик для кнопки "Закрыть" в Telegram
-            if (isTelegramWebApp) {
-                telegram.BackButton.show();
-                telegram.BackButton.onClick(() => {
-                    telegram.close();
-                });
-            }
+        updateStatus('Требуется настройка', 'Укажите URL вашего бота в коде', 'warning');
 
-            log('info', 'Инициализация завершена');
+        telegram.showPopup({
+            title: 'Метод fetch',
+            message: 'Требуется настроить серверную часть:\n1. Создать endpoint\n2. Настроить CORS\n3. Проверить initData\n\nСмотрите инструкции в коде.',
+            buttons: [{type: 'default', text: 'OK'}]
         });
 
-        // Логируем все события Telegram WebApp если они доступны
+        // Раскомментируйте и настройте для реального использования:
+        /*
+        fetch(botWebhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            log(`✅ Ответ сервера: ${JSON.stringify(result)}`, 'success');
+                updateStatus('Успешно', 'Данные отправлены через fetch', 'success');
+            })
+            .catch(error => {
+                log(`❌ Ошибка fetch: ${error.message}`, 'error');
+                updateStatus('Ошибка', `Fetch не удался: ${error.message}`, 'error');
+            });
+            */
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function () {
+        log('Страница загружена', 'info');
+
+        // Определяем браузер
+        const ua = navigator.userAgent;
+        let browser = 'Неизвестно';
+        if (ua.includes('YaBrowser')) browser = 'Яндекс.Браузер';
+        else if (ua.includes('Chrome')) browser = 'Chrome';
+        else if (ua.includes('Firefox')) browser = 'Firefox';
+        else if (ua.includes('Safari')) browser = 'Safari';
+
+        document.getElementById('browserInfo').textContent = browser;
+
+        // Проверяем Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
-            const tg = window.Telegram.WebApp;
+            telegram = window.Telegram.WebApp;
 
-            // Логируем основные события
-            tg.onEvent('viewportChanged', (data) => {
-                log('debug', 'Событие viewportChanged:', data);
-            });
+            document.getElementById('platformInfo').textContent = telegram.platform;
+            document.getElementById('versionInfo').textContent = telegram.version;
 
-            tg.onEvent('themeChanged', () => {
-                log('debug', 'Событие themeChanged, текущая тема:', tg.colorScheme);
-            });
+            // Определяем тип платформы
+            let platformType = 'Неизвестно';
+            let mode = 'Стандартный';
 
-            tg.onEvent('mainButtonClicked', () => {
-                log('debug', 'Событие mainButtonClicked');
-            });
+            if (telegram.platform === 'web') {
+                platformType = 'Десктопный Telegram Web';
+                mode = 'ПРОБЛЕМНЫЙ - sendData() может не работать';
+                document.getElementById('statusCard').classList.add('warning');
+            } else if (telegram.platform === 'weba') {
+                platformType = 'Веб-версия (расширенная)';
+                mode = 'Рабочий - Яндекс.Браузер';
+            } else if (telegram.platform === 'android' || telegram.platform === 'ios') {
+                platformType = 'Мобильное приложение';
+                mode = 'Рабочий';
+            } else if (telegram.platform === 'tdesktop') {
+                platformType = 'Десктопное приложение';
+                mode = 'Рабочий';
+            }
+
+            document.getElementById('platformType').textContent = platformType;
+            document.getElementById('modeInfo').textContent = mode;
+
+            log(`Telegram WebApp обнаружен. Платформа: ${telegram.platform} (${platformType})`, 'success');
+            updateStatus('Готово', `Платформа: ${telegram.platform}. ${mode}`, 'success');
+
+            // Расширяем приложение
+            telegram.ready();
+            telegram.expand();
+
+            // Для платформы 'web' сразу выбираем метод 2
+            if (telegram.platform === 'web') {
+                selectMethod(2);
+                log('⚠️ Обнаружена платформа "web". Рекомендуется использовать метод 2 (postMessage)', 'warning');
+            }
+
+        } else {
+            log('Telegram WebApp не обнаружен', 'error');
+            updateStatus('Ошибка', 'Запустите через Telegram', 'error');
+            document.getElementById('sendBtn').disabled = true;
         }
-    </script>
+
+        // Слушаем сообщения от родительского окна
+        window.addEventListener('message', function (event) {
+            log(`Получено сообщение от родителя: ${JSON.stringify(event.data)}`, 'debug');
+        });
+    });
+</script>
 </body>
 </html>
