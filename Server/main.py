@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, HTTPException, Body
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from datetime import datetime
 
 env = Env()
 env.read_env()
@@ -83,37 +84,152 @@ async def metric_calc(request: Request):
 # --- НОВЫЙ ЭНДПОИНТ ДЛЯ ПРИЕМА POST ЗАПРОСОВ ИЗ MINI APP ---
 @app.post("/api/submit-data")
 async def submit_metric_data(data: WebAppData):
-    # 1. Валидация данных от Telegram Mini App
-    if not validate_telegram_init_data(data.initData, TELEGRAM_BOT_TOKEN):
-        raise HTTPException(status_code=403, detail="Invalid Telegram Init Data Signature")
+    # Детальная информация о запросе для отладки
+    print(f"📥 Получен запрос на /api/submit-data")
+    print(f"   Значение (value): {data.value}")
+    print(f"   Длина initData: {len(data.initData) if data.initData else 0}")
 
-    # 2. Данные валидны. Извлекаем user_id из initData (для примера)
+    # 1. Проверяем наличие initData
+    if not data.initData:
+        print("❌ Отсутствует initData")
+        raise HTTPException(
+            status_code=400,
+            detail="Missing initData parameter"
+        )
+
+    # 2. Валидация данных от Telegram Mini App
+    try:
+        is_valid = validate_telegram_init_data(data.initData, TELEGRAM_BOT_TOKEN)
+        print(f"   Проверка подписи: {'✅ ВАЛИДНО' if is_valid else '❌ НЕВАЛИДНО'}")
+
+        if not is_valid:
+            # Детальная информация о том, что не так
+            print(f"   initData: {data.initData[:100]}...")
+            raise HTTPException(
+                status_code=403,
+                detail="Invalid Telegram Init Data Signature"
+            )
+    except Exception as e:
+        print(f"❌ Ошибка при валидации: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Validation error: {str(e)}"
+        )
+
+    # 3. Извлекаем user_id из initData
     user_data_str = urllib.parse.parse_qsl(data.initData)
     user_id = None
+    user_name = "Unknown"
+
     for key, value in user_data_str:
         if key == 'user':
-            user_info = json.loads(value)
-            user_id = user_info.get('id')
+            try:
+                user_info = json.loads(value)
+                user_id = user_info.get('id')
+
+                # Формируем имя пользователя
+                first_name = user_info.get('first_name', '')
+                last_name = user_info.get('last_name', '')
+                if first_name and last_name:
+                    user_name = f"{first_name} {last_name}"
+                elif first_name:
+                    user_name = first_name
+                elif last_name:
+                    user_name = last_name
+
+                print(f"   Извлечен пользователь: {user_name} (ID: {user_id})")
+            except json.JSONDecodeError as e:
+                print(f"❌ Ошибка парсинга user данных: {e}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid user data in initData: {str(e)}"
+                )
             break
 
     if not user_id:
-        raise HTTPException(status_code=400, detail="User ID not found in init data")
+        print("❌ User ID не найден в initData")
+        raise HTTPException(
+            status_code=400,
+            detail="User ID not found in init data"
+        )
 
-    # 3. Обработка данных (например, сохранение в БД)
+    # 4. Обработка данных
     result_value = data.value
-    print(f"Получены валидные данные от пользователя {user_id}: {result_value}")
+    print(f"✅ Получены валидные данные от пользователя {user_name} (ID: {user_id}): {result_value}")
 
-    # 4. Отправка ответного сообщения боту через Bot API
-    # Ваш сервер делает HTTPS POST запрос к API Telegram
-    send_text = f"Я получил данные от Mini App:\nValue: {result_value}"
+    # 5. Отправка ответного сообщения боту через Bot API
+    send_text = f"""
+✅ <b>Данные успешно получены!</b>
+
+👤 <b>Пользователь:</b> {user_name}
+🆔 <b>ID:</b> <code>{user_id}</code>
+📊 <b>Значение:</b> {result_value}
+⏰ <b>Время:</b> {datetime.now().strftime('%H:%M:%S')}
+📡 <b>Статус:</b> Валидация пройдена успешно
+"""
 
     telegram_api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         'chat_id': user_id,
-        'text': send_text
+        'text': send_text,
+        'parse_mode': 'HTML'
     }
 
-    # Отправляем запрос в Telegram (асинхронно или синхронно, FastAPI позволяет)
-    requests.post(telegram_api_url, json=payload)
+    bot_response_status = "not_attempted"
+    bot_response_detail = ""
 
-    return {"status": "success", "message": "Data received and bot notified"}
+    try:
+        print(f"   Отправка сообщения пользователю {user_id} через бота...")
+        response = requests.post(telegram_api_url, json=payload, timeout=10)
+
+        if response.status_code == 200:
+            response_data = response.json()
+            if response_data.get('ok'):
+                print(f"✅ Сообщение отправлено пользователю {user_id}")
+                bot_response_status = "success"
+            else:
+                error_msg = response_data.get('description', 'Unknown error')
+                print(f"⚠️ Ошибка Telegram API: {error_msg}")
+                bot_response_status = "telegram_api_error"
+                bot_response_detail = error_msg
+        else:
+            print(f"❌ HTTP ошибка: {response.status_code}")
+            bot_response_status = "http_error"
+            bot_response_detail = f"HTTP {response.status_code}"
+
+    except requests.exceptions.Timeout:
+        print("❌ Таймаут при отправке сообщения")
+        bot_response_status = "timeout"
+    except requests.exceptions.ConnectionError:
+        print("❌ Ошибка соединения с Telegram API")
+        bot_response_status = "connection_error"
+    except Exception as e:
+        print(f"❌ Неизвестная ошибка: {e}")
+        bot_response_status = "unknown_error"
+        bot_response_detail = str(e)
+
+    # 6. Возвращаем ответ
+    response_data = {
+        "status": "success",
+        "message": "Data received and validated successfully",
+        "validation": {
+            "init_data_valid": True,
+            "user_found": True
+        },
+        "user": {
+            "id": user_id,
+            "name": user_name
+        },
+        "data": {
+            "value": result_value,
+            "length": len(result_value)
+        },
+        "bot_notification": {
+            "status": bot_response_status,
+            "detail": bot_response_detail
+        },
+        "timestamp": datetime.now().isoformat()
+    }
+
+    print(f"📤 Отправка ответа клиенту")
+    return response_data
