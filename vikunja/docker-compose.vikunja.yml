@@ -67,7 +67,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.vikunja-http.entrypoints=web"
       - "traefik.http.routers.vikunja-http.rule=Host(`vikunja.calc.press`)"
-      - "traefik.http.routers.vikunja-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.vikunja-http.middlewares=redirect-to-https@file"
       - "traefik.http.routers.vikunja.entrypoints=websecure"
       - "traefik.http.routers.vikunja.rule=Host(`vikunja.calc.press`)"
       - "traefik.http.routers.vikunja.tls.certresolver=le"
