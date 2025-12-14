@@ -74,6 +74,10 @@ async def root(request: Request):
 async def metric_calc(request: Request):
     return templates.TemplateResponse("test.html", {"request": request})
 
+@app.get("/stubacme-calc")
+async def metric_calc(request: Request):
+    return templates.TemplateResponse("stubacme-calc.html", {"request": request})
+
 
 # Обновленный маршрут для отображения калькулятора
 @app.get("/metric-calc")
