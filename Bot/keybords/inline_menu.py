@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 LEXICON_BUTTON = {
     "🔩 Stub ACME": "https://miniapp.calc.press/stubacme-calc",
     "📏 Метрическая резьба": "https://miniapp.calc.press/metric-calc",
-    "test": "https://miniapp.calc.press/test",
+    #"test": "https://miniapp.calc.press/test",
     # "test2": "https://miniapp.calc.press/test2",
     # "test_bt": "https://miniapp.calc.press",
 }
