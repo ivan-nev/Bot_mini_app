@@ -42,7 +42,6 @@ services:
       - ./local-files:/files
     networks:
       - proxy-network
-      - internal-network
     depends_on:
       - postgresdb
 
@@ -58,7 +57,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - internal-network
+      - proxy-network
     ports:
       - 5430:5432
     healthcheck:
@@ -78,7 +77,3 @@ networks:
   proxy-network:
     external: true
     name: traefik_proxy-network
-
-  internal-network:
-    driver: bridge
-    internal: true
