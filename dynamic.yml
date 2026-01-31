@@ -5,8 +5,3 @@ http:
       redirectScheme:
         scheme: https
         permanent: true
-
-    n8n-redirect:
-      chain:
-        middlewares:
-          - redirect-to-https
