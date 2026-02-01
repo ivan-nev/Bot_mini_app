@@ -1,9 +1,12 @@
 services:
   n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: always
+
+    # Добавляем Python поддержку
     build:
       context: .
-      dockerfile: Dockerfile
-    restart: always
+      dockerfile: Dockerfile.n8n-python  # Создадим отдельный Dockerfile
 
     labels:
       - "traefik.enable=true"

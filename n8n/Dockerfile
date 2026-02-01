@@ -1,23 +1,26 @@
-FROM node:18-alpine
+FROM docker.n8n.io/n8nio/n8n:latest
 
+# Переключаемся на root для установки пакетов
 USER root
 
-# Установка Python и pip
-RUN apk add --no-cache python3 py3-pip
+# Устанавливаем Python и необходимые пакеты
+RUN apt-get update && \
+    apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Установка n8n глобально
-RUN npm install -g n8n
+# Устанавливаем популярные Python библиотеки (опционально)
+#RUN pip3 install --no-cache-dir \
+#    pandas \
+#    requests \
+#    beautifulsoup4 \
+#    lxml
 
-# Создание пользователя node (если не существует)
-RUN addgroup -g 1000 node || true && \
-    adduser -D -u 1000 -G node node || true
-
+# Возвращаемся к пользователю node
 USER node
 
-WORKDIR /home/node
-
-# Expose порт n8n
-EXPOSE 5678
-
-# Команда запуска n8n
-CMD ["n8n"]
+# Проверяем установку
+RUN python3 --version
