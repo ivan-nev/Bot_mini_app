@@ -6,7 +6,7 @@ services:
     # Добавляем Python поддержку
     build:
       context: .
-      dockerfile: Dockerfile.n8n-python  # Создадим отдельный Dockerfile
+      dockerfile: Dockerfile  # Создадим отдельный Dockerfile
 
     labels:
       - "traefik.enable=true"
