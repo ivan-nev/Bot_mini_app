@@ -1,12 +1,23 @@
-FROM docker.n8n.io/n8nio/n8n
+FROM node:18-alpine
 
 USER root
 
-# Установка Python 3 и pip для Debian-based образа
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Установка Python и pip
+RUN apk add --no-cache python3 py3-pip
 
-# Опционально: установка дополнительных Python библиотек
-# RUN pip3 install requests beautifulsoup4 pandas
+# Установка n8n глобально
+RUN npm install -g n8n
+
+# Создание пользователя node (если не существует)
+RUN addgroup -g 1000 node || true && \
+    adduser -D -u 1000 -G node node || true
+
+USER node
+
+WORKDIR /home/node
+
+# Expose порт n8n
+EXPOSE 5678
+
+# Команда запуска n8n
+CMD ["n8n"]
