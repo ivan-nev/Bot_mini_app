@@ -1,0 +1,170 @@
+volumes:
+  postgres_data_2:
+  n8n_data_2:
+
+networks:
+  proxy-network:
+    external: true
+    name: traefik_proxy-network
+  internal:
+
+services:
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/New_York}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data_2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+    ports:
+      - 5429:5432
+
+  # Redis for queue management
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/New_York}
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # n8n main instance
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/New_York}
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      NODE_ENV: production
+      WEBHOOK_URL: https://${N8N_HOST}/
+      GENERIC_TIMEZONE: ${TZ:-America/New_York}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      # Database
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      # Queue
+      QUEUE_BULL_REDIS_HOST: redis
+      QUEUE_BULL_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      # Task Runners (Python + JS support)
+      N8N_RUNNERS_ENABLED: ${N8N_RUNNERS_ENABLED:-true}
+      N8N_RUNNERS_MODE: external
+      N8N_RUNNERS_BROKER_LISTEN_ADDRESS: 0.0.0.0
+      N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
+      # Execution settings
+      EXECUTIONS_DATA_MAX_AGE: 168
+      EXECUTIONS_DATA_PRUNE: true
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: 10000
+      N8N_METRICS: true
+    volumes:
+      - n8n_data_2:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - proxy-network
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n-http.entrypoints=web"
+      - "traefik.http.routers.n8n-http.rule=Host(`n8n.calc.press`)"
+      - "traefik.http.routers.n8n-http.middlewares=redirect-to-https@file"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.calc.press`)"
+      - "traefik.http.routers.n8n.tls.certresolver=le"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  # n8n worker for queue processing
+  n8n-worker:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: unless-stopped
+    command: worker
+    environment:
+      TZ: ${TZ:-America/New_York}
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      NODE_ENV: production
+      GENERIC_TIMEZONE: ${TZ:-America/New_York}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      # Database
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      # Queue
+      QUEUE_BULL_REDIS_HOST: redis
+      QUEUE_BULL_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      # Task Runners (Python + JS support)
+      N8N_RUNNERS_ENABLED: ${N8N_RUNNERS_ENABLED:-true}
+      N8N_RUNNERS_MODE: external
+      N8N_RUNNERS_BROKER_LISTEN_ADDRESS: 0.0.0.0
+      N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
+      # Execution settings
+      EXECUTIONS_DATA_MAX_AGE: 168
+      EXECUTIONS_DATA_PRUNE: true
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: 10000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+
+  # Task runners for n8n main (JS + Python)
+  n8n-runners:
+    image: n8nio/runners:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/New_York}
+      N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
+      N8N_RUNNERS_TASK_BROKER_URI: http://n8n:5679
+    volumes:
+      - ./n8n-task-runners.json:/etc/n8n-task-runners.json:ro
+    depends_on:
+      - n8n
+    networks:
+      - internal
+
+  # Task runners for n8n worker (JS + Python)
+  n8n-worker-runners:
+    image: n8nio/runners:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/New_York}
+      N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
+      N8N_RUNNERS_TASK_BROKER_URI: http://n8n-worker:5679
+    volumes:
+      - ./n8n-task-runners.json:/etc/n8n-task-runners.json:ro
+    depends_on:
+      - n8n-worker
+    networks:
+      - internal

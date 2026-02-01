@@ -1,0 +1,25 @@
+# Environment files with secrets
+.env
+
+# Docker volumes (if mounted locally)
+postgres_data/
+n8n_data/
+traefik_letsencrypt/
+
+# Backup files
+*.sql
+*.backup
+backups/
+
+# SSH keys
+n8n-ssh/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
