@@ -6,7 +6,6 @@ networks:
   proxy-network:
     external: true
     name: traefik_proxy-network
-  internal:
 
 services:
 
@@ -27,7 +26,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - internal
+      - proxy-network
     ports:
       - 5429:5432
 
@@ -44,7 +43,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - internal
+      - proxy-network
 
   # n8n main instance
   n8n:
@@ -88,7 +87,6 @@ services:
         condition: service_healthy
     networks:
       - proxy-network
-      - internal
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.n8n-http.entrypoints=web"
@@ -137,7 +135,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - internal
+      - proxy-network
 
   # Task runners for n8n main (JS + Python)
   n8n-runners:
@@ -152,7 +150,7 @@ services:
     depends_on:
       - n8n
     networks:
-      - internal
+      - proxy-network
 
   # Task runners for n8n worker (JS + Python)
   n8n-worker-runners:
@@ -167,4 +165,4 @@ services:
     depends_on:
       - n8n-worker
     networks:
-      - internal
+      - proxy-network
