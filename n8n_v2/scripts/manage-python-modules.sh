@@ -11,19 +11,9 @@
 
 set -e
 
-# Определяем директорию скрипта и переходим к корню проекта
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"  # родительская папка скрипта (где лежит n8n-task-runners.json)
-
-CONFIG_FILE="$PROJECT_DIR/n8n-task-runners.json"
-COMPOSE_DIR="$PROJECT_DIR"              # там же лежит docker-compose.yml
-BACKUP_DIR="$PROJECT_DIR/backups"
-
-# Проверка наличия конфигурационного файла
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Ошибка: конфигурационный файл не найден: $CONFIG_FILE"
-    exit 1
-fi
+CONFIG_FILE="/root/n8n-server/compose/n8n-task-runners.json"
+COMPOSE_DIR="/root/n8n-server/compose"
+BACKUP_DIR="/root/n8n-server/compose/backups"
 
 # Colors
 GREEN='\033[0;32m'
