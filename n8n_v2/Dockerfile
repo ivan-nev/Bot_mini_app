@@ -1,4 +1,8 @@
 FROM n8nio/runners:latest
 
-# Установка дополнительных Python-пакетов
-RUN pip install requests pandas numpy  # и другие, если нужны
+# Устанавливаем пакеты именно в .venv
+RUN /opt/runners/task-runner-python/.venv/bin/pip install \
+    requests \
+    pandas \
+    numpy \
+    # добавьте другие нужные пакеты
