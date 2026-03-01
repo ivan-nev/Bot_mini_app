@@ -139,7 +139,7 @@ services:
 
   # Task runners for n8n main (JS + Python)
   n8n-runners:
-    image: n8nio/runners:latest
+    image: my-n8n-runners:latest
     restart: unless-stopped
     environment:
       TZ: ${TZ:-America/New_York}
@@ -154,7 +154,7 @@ services:
 
   # Task runners for n8n worker (JS + Python)
   n8n-worker-runners:
-    image: n8nio/runners:latest
+    image: my-n8n-runners:latest
     restart: unless-stopped
     environment:
       TZ: ${TZ:-America/New_York}
