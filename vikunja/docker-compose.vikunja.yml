@@ -85,7 +85,7 @@ services:
         max-file: "10"
 
   db:
-    image: mariadb:10.11
+    image: mariadb:latest
     container_name: vikunja_db
     env_file:
       - .env
