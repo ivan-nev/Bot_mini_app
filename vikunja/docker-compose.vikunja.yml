@@ -113,6 +113,39 @@ services:
         max-size: "200k"
         max-file: "10"
 
+  # Сервис для автоматического бэкапа базы данных
+  db-backup:
+    image: alpine:latest
+    container_name: vikunja_db_backup
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${VIKUNJA_DB_ROOT_PASSWORD}
+      - DB_NAME=${VIKUNJA_DB_NAME:-vikunja}
+      - MAX_BACKUPS=30
+      - BACKUP_INTERVAL=86400  # 24 часа
+    volumes:
+      - ./backups:/backups
+      - ./backup-script.sh:/backup-script.sh:ro
+    entrypoint: [ "/bin/sh" ]
+    command: >
+      -c "
+        apk add --no-cache mariadb-client bash &&
+        /bin/bash /backup-script.sh
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - proxy-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+
 volumes:
   vikunja_db_data:
 
