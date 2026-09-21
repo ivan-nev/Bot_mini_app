@@ -55,6 +55,8 @@ services:
       - VIKUNJA_MAILER_PASSWORD=${SMTP_PASSWORD}
       - VIKUNJA_MAILER_FROMEMAIL=${SMTP_FROM_EMAIL}
       - VIKUNJA_DEFAULTSETTINGS_EMAIL_REMINDERS_ENABLED=true
+      # Логотип
+      - VIKUNJA_SERVICE_CUSTOMLOGOURL=https://static.tildacdn.com/tild3439-3062-4532-b134-396162323437/Logo-1_1.svg
 
     volumes:
       - ~/vikunja_files:/app/vikunja/files
