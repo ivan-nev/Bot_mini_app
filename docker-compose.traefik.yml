@@ -19,7 +19,7 @@ services:
       - --providers.file.directory=/etc/traefik
       - --providers.file.watch=true
       # старый синтаксис команд
-      - --core.defaultRuleSyntax=v2
+      #- --core.defaultRuleSyntax=v2
     ports:
       - "80:80"
       - "443:443"
