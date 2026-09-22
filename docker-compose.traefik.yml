@@ -2,7 +2,8 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:v2.9
+    #image: traefik:v2.9
+    image: traefik:latest
     container_name: traefik
     command:
       - --api.dashboard=true
@@ -17,6 +18,8 @@ services:
       # Добавляем провайдер для middleware
       - --providers.file.directory=/etc/traefik
       - --providers.file.watch=true
+      # старый синтаксис команд
+      - --core.defaultRuleSyntax=v2
     ports:
       - "80:80"
       - "443:443"
