@@ -56,7 +56,7 @@ services:
       - VIKUNJA_MAILER_FROMEMAIL=${SMTP_FROM_EMAIL}
       - VIKUNJA_DEFAULTSETTINGS_EMAIL_REMINDERS_ENABLED=true
       # Логотип
-      - VIKUNJA_SERVICE_CUSTOMLOGOURL=https://static.tildacdn.com/tild3439-3062-4532-b134-396162323437/Logo-1_1.svg
+#      - VIKUNJA_SERVICE_CUSTOMLOGOURL=https://static.tildacdn.com/tild3439-3062-4532-b134-396162323437/Logo-1_1.svg
 
     volumes:
       - ~/vikunja_files:/app/vikunja/files
@@ -125,7 +125,7 @@ services:
       - MYSQL_ROOT_PASSWORD=${VIKUNJA_DB_ROOT_PASSWORD}
       - DB_NAME=${VIKUNJA_DB_NAME:-vikunja}
       - MAX_BACKUPS=30
-      - BACKUP_INTERVAL=86400  # 24 часа
+      - BACKUP_INTERVAL=86400
     volumes:
 #      - ./backups:/backups
       - ~/vikunja_files/backups:/backups
