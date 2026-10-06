@@ -19,7 +19,7 @@ services:
       - --providers.file.directory=/etc/traefik
       - --providers.file.watch=true
       # Логирование путей
-      - --accesslog=true
+      #- --accesslog=true
       # старый синтаксис команд
       #- --core.defaultRuleSyntax=v2
     ports:
