@@ -10,7 +10,7 @@ services:
 #      - PUID=1001
 #      - PGID=1003
       # Обязательные настройки
-      - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.calc.press
+      - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.ru
       - VIKUNJA_SERVICE_SECRET=${VIKUNJA_JWT_SECRET}
 
       # Настройки базы данных
@@ -21,7 +21,7 @@ services:
       - VIKUNJA_DATABASE_DATABASE=${VIKUNJA_DB_NAME}
 
       # Настройки файлового хранилища - ИСПРАВЛЕНО!
-      - VIKUNJA_FILES_BASEURL=https://vikunja.calc.press
+      - VIKUNJA_FILES_BASEURL=https://vikunja.ru
       - VIKUNJA_FILES_STORAGE_TYPE=local
       - VIKUNJA_FILES_STORAGE_LOCAL_PATH=/app/vikunja/files
 
@@ -68,10 +68,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vikunja-http.entrypoints=web"
-      - "traefik.http.routers.vikunja-http.rule=Host(`vikunja.calc.press`)"
+      - "traefik.http.routers.vikunja-http.rule=Host(`vikunja.ru`)"
       - "traefik.http.routers.vikunja-http.middlewares=redirect-to-https@file"
       - "traefik.http.routers.vikunja.entrypoints=websecure"
-      - "traefik.http.routers.vikunja.rule=Host(`vikunja.calc.press`)"
+      - "traefik.http.routers.vikunja.rule=Host(`vikunja.ru`)"
       - "traefik.http.routers.vikunja.tls.certresolver=le"
       - "traefik.http.services.vikunja.loadbalancer.server.port=3456"
     networks:

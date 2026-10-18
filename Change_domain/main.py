@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
-NEW_URL = "https://vikunja.calc.press"
+NEW_URL = "https://vikunja.ru"
 
 HTML_PAGE = f"""<!DOCTYPE html>
 <html lang="ru">
@@ -70,7 +70,7 @@ HTML_PAGE = f"""<!DOCTYPE html>
 <body>
     <div class="card">
         <div class="logo">Vikunja</div>
-        <h1>Мы переехали</h1>
+        <h1>Сервис переехал</h1>
         <p>Сервис доступен по новому адресу:</p>
         <a class="new-url" href="{NEW_URL}">{NEW_URL}</a>
         <br>
