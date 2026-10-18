@@ -32,7 +32,7 @@ services:
       - ./dynamic.yml:/etc/traefik/dynamic.yml  # Файл с middleware
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.calc.press`)"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.vikunja.ru`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls.certresolver=le"
