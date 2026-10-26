@@ -53,7 +53,7 @@ services:
       - task-runners
 
   task-runners:
-    image: n8nio/runners:2.44.7
+    image: n8nio/runners:2.10.4
     restart: always
     environment:
       - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
