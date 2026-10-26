@@ -17,12 +17,13 @@ services:
       - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
+      - N8N_PROXY_HOPS=1
       - N8N_RUNNERS_MODE=external
       - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
       - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
       - N8N_NATIVE_PYTHON_RUNNER=true
       - NODE_ENV=production
-      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - N8N_WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
       - TZ=${GENERIC_TIMEZONE}
       - N8N_VERSION_NOTIFICATIONS_ENABLED=false
@@ -33,7 +34,11 @@ services:
       - DB_POSTGRESDB_USER=${DB_POSTGRESDB_USER}
       - DB_POSTGRESDB_PASSWORD=${DB_POSTGRESDB_PASSWORD}
       - N8N_RUNNERS_STDLIB_ALLOW=*
-      - N8N_TRUST_PROXY=true
+      # Сетевые исправления для EAI_AGAIN
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - n8n_data:/home/node/.n8n
       - ./local-files:/files
@@ -51,6 +56,10 @@ services:
       - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
     networks:
       - proxy-network
+    # Те же сетевые исправления, если раннеру тоже нужно ходить в интернет
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
 
   postgresdb:
     image: postgres:15-alpine
