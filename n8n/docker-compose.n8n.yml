@@ -33,6 +33,7 @@ services:
       - DB_POSTGRESDB_USER=${DB_POSTGRESDB_USER}
       - DB_POSTGRESDB_PASSWORD=${DB_POSTGRESDB_PASSWORD}
       - N8N_RUNNERS_STDLIB_ALLOW=*
+      - N8N_TRUST_PROXY=true
     volumes:
       - n8n_data:/home/node/.n8n
       - ./local-files:/files
