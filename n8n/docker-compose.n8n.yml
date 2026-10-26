@@ -39,7 +39,7 @@ services:
       - N8N_RUNNERS_TASK_TIMEOUT=300
       - N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES=2147483648
       - N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES=5000
-      - # - N8N_UNVERIFIED_PACKAGES_ENABLED=true  # только если нужны непроверенные пакеты
+    # - N8N_UNVERIFIED_PACKAGES_ENABLED=true  # только если нужны непроверенные пакеты
     dns:
       - 8.8.8.8
       - 1.1.1.1
