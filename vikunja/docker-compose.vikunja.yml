@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   vikunja:
-    image: inevakshenov/vikunja-custom:2.7.0
+    image: inevakshenov/vikunja-custom:2.7.1
     container_name: vikunja_app
     env_file:
       - .env
