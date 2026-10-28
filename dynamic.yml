@@ -16,7 +16,9 @@ http:
           img-src 'self' data: blob: https:;
           font-src 'self' data:;
           connect-src 'self' ws: wss:;
-          object-src 'none';
+          frame-src 'self' blob:;
+          object-src 'self' blob:;
+          worker-src 'self' blob:;
           base-uri 'self';
           frame-ancestors 'self';
         customFrameOptionsValue: "SAMEORIGIN"
