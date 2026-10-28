@@ -21,3 +21,20 @@ http:
           frame-ancestors 'self';
         customFrameOptionsValue: "SAMEORIGIN"
 
+        # ДОБАВЛЯЕМ НОВЫЕ ЗАГОЛОВКИ:
+
+        # 1. Strict-Transport-Security (HSTS) - заставляет браузер всегда использовать только HTTPS (1 год)
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+
+        # 2. X-Content-Type-Options - запрещает браузеру "угадывать" тип файла
+        contentTypeNosniff: true
+
+        # 3. Referrer-Policy - контролирует, какую информацию о переходе передавать другим сайтам
+        referrerPolicy: "strict-origin-when-cross-origin"
+
+        # 4. Permissions-Policy - запрещает сайту использовать камеру, микрофон и геолокацию без спроса
+        permissionsPolicy: "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+
+
