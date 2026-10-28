@@ -73,6 +73,8 @@ services:
       - "traefik.http.routers.vikunja.rule=Host(`vikunja.ru`)"
       - "traefik.http.routers.vikunja.tls.certresolver=le"
       - "traefik.http.services.vikunja.loadbalancer.server.port=3456"
+      # Подключаем CSP
+      - "traefik.http.routers.vikunja.middlewares=vikunja-csp@file"
     networks:
       - proxy-network
     depends_on:

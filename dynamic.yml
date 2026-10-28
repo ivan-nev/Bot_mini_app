@@ -5,3 +5,22 @@ http:
       redirectScheme:
         scheme: https
         permanent: true
+
+
+
+        # Новый middleware для защиты от XSS
+    vikunja-csp:
+      headers:
+        # Сначала рекомендую использовать Report-Only (см. примечание ниже)
+        # Раскомментируйте contentSecurityPolicy и закомментируйте ReportOnly, когда убедитесь, что всё работает
+        # contentSecurityPolicy: >-
+        contentSecurityPolicyReportOnly: >-
+          default-src 'self';
+          script-src 'self';
+          style-src 'self' 'unsafe-inline';
+          img-src 'self' data: blob: https:;
+          font-src 'self' data:;
+          connect-src 'self' ws: wss:;
+          object-src 'none';
+          base-uri 'self';
+          frame-ancestors 'self';
