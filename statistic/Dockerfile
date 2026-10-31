@@ -1,4 +1,4 @@
-docker ps -aFROM python:3.12-slim
+FROM python:3.12-slim
 
 # Не создавать .pyc и не буферизовать stdout — логи видны сразу
 ENV PYTHONDONTWRITEBYTECODE=1 \
