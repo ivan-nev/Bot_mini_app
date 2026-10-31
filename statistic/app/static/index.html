@@ -126,6 +126,8 @@
         <button type="button" class="preset" id="presetThisMonth" title="Текущий календарный месяц">Этот месяц</button>
         <button type="button" class="preset" id="presetPrevMonth" title="Прошлый календарный месяц">Прошлый месяц</button>
         <button type="button" class="preset" id="presetThisYear" title="С 1 января по 31 декабря текущего года">Этот год</button>
+        <button type="button" class="preset" id="presetPrevYear" title="Прошлый календарный год">Прошлый год</button>
+        <button type="button" class="preset" id="presetAll" title="Весь доступный период данных Vikunja">Весь период</button>
       </div>
     </div>
   </div>
@@ -299,6 +301,19 @@ function applyMonthPreset(kind) {
   } else if (kind === 'thisYear') {
     m1 = 0;
     m2 = 11;
+  } else if (kind === 'prevYear') {
+    y1 = y2 = today.getFullYear() - 1;
+    m1 = 0;
+    m2 = 11;
+  } else if (kind === 'all') {
+    // весь доступный диапазон данных Vikunja (точные даты, не по месяцам)
+    if (currentMeta) {
+      $('dateFrom').value = currentMeta.default_start || currentMeta.min_date || '';
+      $('dateTo').value = currentMeta.default_end || currentMeta.max_date || '';
+      syncMonthsFromDates();
+      apply(false);
+      return;
+    }
   }
   setMonthRange(y1, m1, y2, m2);
   if (syncDatesFromMonths()) apply(false);
@@ -667,6 +682,8 @@ for (const id of ['monthFrom', 'monthTo', 'yearFrom', 'yearTo']) {
 $('presetThisMonth').addEventListener('click', () => applyMonthPreset('thisMonth'));
 $('presetPrevMonth').addEventListener('click', () => applyMonthPreset('prevMonth'));
 $('presetThisYear').addEventListener('click', () => applyMonthPreset('thisYear'));
+$('presetPrevYear').addEventListener('click', () => applyMonthPreset('prevYear'));
+$('presetAll').addEventListener('click', () => applyMonthPreset('all'));
 $('tasksTable').querySelector('thead').addEventListener('click', (e) => {
   const th = e.target instanceof Element ? e.target.closest('th[data-sort]') : null;
   if (!th) return;
