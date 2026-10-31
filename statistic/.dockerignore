@@ -1,0 +1,12 @@
+.env
+.env.example
+.git
+.gitignore
+.idea
+__pycache__/
+*.pyc
+cache/
+tests/
+*.md
+*.PNG
+*.png

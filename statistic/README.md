@@ -54,9 +54,41 @@ VIKUNJA_TOKEN=paste_your_token_here
 | `TZ` | `UTC` | часовой пояс для границ дня/недели/месяца (например `Asia/Yekaterinburg`) |
 | `CACHE_TTL` | `300` | время жизни кэша задач, секунд (0 — отключить) |
 | `LOG_LEVEL` | `INFO` | уровень логирования: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+| `AUTH_USER` | — | логин базовой HTTP-аутентификации дашборда |
+| `AUTH_PASS` | — | пароль базовой HTTP-аутентификации дашборда |
+| `DOMAIN` | `vikunja.ru` | домен сервиса для docker-compose/Traefik |
+| `SUBDOMAIN` | `stat` | поддомен сервиса (итог: `stat.vikunja.ru`) |
+| `SERVICE_PORT` | `8001` | порт, на котором приложение слушает внутри контейнера |
 
 Если токен не задан, но в папке `cache/` есть ранее скачанные задачи — сервис
 работает в офлайн-режиме на кэше.
+
+Если заданы **оба** поля `AUTH_USER` и `AUTH_PASS` — доступ ко всему сервису
+(страницы, API, статика, `/docs`) только по логину и паролю: браузер сам
+покажет окно входа. Пустые поля отключают аутентификацию.
+
+## Запуск в Docker (за Traefik)
+
+Сервис публикуется как **https://stat.vikunja.ru** через Traefik из
+`docker-compose.traefik.yml` (сеть `traefik_proxy-network`). Домен, поддомен
+и порт задаются в `.env` (`DOMAIN`, `SUBDOMAIN`, `SERVICE_PORT`).
+
+```bash
+cd statistic
+docker compose up -d --build
+```
+
+- образ собирается из `Dockerfile` (python:3.12-slim, uvicorn на порту `SERVICE_PORT`);
+- все переменные из `.env` попадают в контейнер через `env_file`;
+- кэш задач лежит в `./cache` (volume) и переживает перезапуск контейнера;
+- Traefik сам выпускает сертификат Let's Encrypt (websecure, `certresolver=le`)
+  и делает редирект HTTP → HTTPS;
+- healthcheck контейнера проверяет `/health` с учётом Basic Auth.
+
+```bash
+docker compose logs -f statistic   # логи
+docker compose down                # остановить
+```
 
 ## API
 
@@ -71,7 +103,7 @@ VIKUNJA_TOKEN=paste_your_token_here
 Пример:
 
 ```bash
-curl "http://127.0.0.1:8001/api/stats?start=2025-11-01&end=2025-12-31&interval=week"
+curl -u AUTH_USER:AUTH_PASS "http://127.0.0.1:8001/api/stats?start=2025-11-01&end=2025-12-31&interval=week"
 ```
 
 ## Тесты логики

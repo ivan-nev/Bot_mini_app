@@ -10,14 +10,17 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import datetime as dt
+import hmac
 import logging
 import time
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import stats as stats_mod
@@ -56,6 +59,36 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Статистика Разработка УП", version="1.0.0", lifespan=lifespan)
+
+
+def _check_basic_auth(authorization: str | None) -> bool:
+    """Проверка Basic-авторизации: логин/пароль из заголовка Authorization."""
+    if not authorization or not authorization.lower().startswith("basic "):
+        return False
+    try:
+        encoded = authorization.split(" ", 1)[1].strip()
+        raw = base64.b64decode(encoded, validate=True).decode("utf-8")
+        user, sep, password = raw.partition(":")
+        if not sep:
+            return False
+    except (ValueError, UnicodeDecodeError, binascii.Error):
+        return False
+    return hmac.compare_digest(user, settings.auth_user) and hmac.compare_digest(
+        password, settings.auth_pass
+    )
+
+
+@app.middleware("http")
+async def basic_auth_middleware(request: Request, call_next):
+    """Basic Auth для всего приложения: страницы, API, статика и /docs."""
+    if settings.auth_enabled and not _check_basic_auth(request.headers.get("Authorization")):
+        return JSONResponse(
+            {"detail": "Требуется авторизация: укажите логин и пароль"},
+            status_code=401,
+            headers={"WWW-Authenticate": 'Basic realm="Statistika UP"'},
+        )
+    return await call_next(request)
+
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

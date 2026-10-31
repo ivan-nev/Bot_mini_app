@@ -1,0 +1,38 @@
+services:
+  statistic:
+    build: .
+    image: statistic-up:latest
+    container_name: statistic_up
+    env_file:
+      - .env
+    environment:
+      - SERVICE_PORT=${SERVICE_PORT:-8001}
+    expose:
+      - "${SERVICE_PORT:-8001}"
+    volumes:
+      # кэш задач Vikunja сохраняется между перезапусками контейнера
+      - ./cache:/app/cache
+    labels:
+      - "traefik.enable=true"
+      # HTTP -> HTTPS редирект (middleware из dynamic.yml Traefik)
+      - "traefik.http.routers.statistik-http.entrypoints=web"
+      - "traefik.http.routers.statistik-http.rule=Host(`${SUBDOMAIN}.${DOMAIN}`)"
+      - "traefik.http.routers.statistik-http.middlewares=redirect-to-https@file"
+      # HTTPS с сертификатом Let's Encrypt
+      - "traefik.http.routers.statistik.entrypoints=websecure"
+      - "traefik.http.routers.statistik.rule=Host(`${SUBDOMAIN}.${DOMAIN}`)"
+      - "traefik.http.routers.statistik.tls.certresolver=le"
+      - "traefik.http.services.statistik.loadbalancer.server.port=${SERVICE_PORT:-8001}"
+    networks:
+      - proxy-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+networks:
+  proxy-network:
+    external: true
+    name: traefik_proxy-network

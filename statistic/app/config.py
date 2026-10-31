@@ -29,6 +29,10 @@ class Settings:
     # Часовой пояс, в котором считаются интервалы день/неделя/месяц
     timezone: str = field(default_factory=lambda: os.getenv("TZ", "UTC"))
 
+    # Базовая HTTP-аутентификация дашборда (пусто — аутентификация отключена)
+    auth_user: str = field(default_factory=lambda: os.getenv("AUTH_USER", ""))
+    auth_pass: str = field(default_factory=lambda: os.getenv("AUTH_PASS", ""))
+
     # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO").upper())
 
@@ -44,6 +48,10 @@ class Settings:
     @property
     def token_configured(self) -> bool:
         return bool(self.vikunja_token) and self.vikunja_token != "YOUR_API_TOKEN_HERE"
+
+    @property
+    def auth_enabled(self) -> bool:
+        return bool(self.auth_user) and bool(self.auth_pass)
 
 
 settings = Settings()
