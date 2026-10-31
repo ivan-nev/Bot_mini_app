@@ -40,6 +40,11 @@
   }
   button:hover { filter: brightness(1.08); }
   button:disabled { opacity: 0.6; cursor: wait; }
+  .controls-row { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+  .selects { display: flex; gap: 6px; }
+  .selects select { min-width: 120px; }
+  .selects select.year { min-width: 90px; }
+  button.preset { padding: 8px 12px; font-size: 13px; background: #6b7280; }
   .loader {
     position: fixed; inset: 0; background: rgba(244, 246, 249, 0.8);
     display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -100,6 +105,30 @@
 </div>
 
 <div class="controls">
+  <div class="controls-row">
+    <div class="field">
+      <label for="monthFrom">Период: с</label>
+      <div class="selects">
+        <select id="monthFrom"></select>
+        <select id="yearFrom" class="year"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="monthTo">по</label>
+      <div class="selects">
+        <select id="monthTo"></select>
+        <select id="yearTo" class="year"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Быстрый период</label>
+      <div class="selects">
+        <button type="button" class="preset" id="presetThisMonth" title="Текущий календарный месяц">Этот месяц</button>
+        <button type="button" class="preset" id="presetPrevMonth" title="Прошлый календарный месяц">Прошлый месяц</button>
+        <button type="button" class="preset" id="presetThisYear" title="С 1 января по 31 декабря текущего года">Этот год</button>
+      </div>
+    </div>
+  </div>
   <div class="field">
     <label for="dateFrom">Начало периода</label>
     <input type="date" id="dateFrom">
@@ -201,6 +230,80 @@ const tasksSort = { key: 'done_at', dir: 'asc' };
 const $ = (id) => document.getElementById(id);
 const fmtDate = (iso) => iso ? iso.slice(0, 10) : '';
 
+const MONTH_NAMES = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+let monthsReady = false;
+
+const toIso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const parseIso = (iso) => ({ y: +iso.slice(0, 4), m: +iso.slice(5, 7) - 1 });
+
+function fillMonthYearOptions(meta) {
+  const today = new Date();
+  const minY = meta.min_date ? +meta.min_date.slice(0, 4) : today.getFullYear();
+  const maxY = meta.max_date ? +meta.max_date.slice(0, 4) : today.getFullYear();
+  const years = [];
+  for (let y = Math.min(minY, today.getFullYear()); y <= Math.max(maxY, today.getFullYear()); y++) years.push(y);
+  for (const id of ['monthFrom', 'monthTo']) {
+    $(id).innerHTML = MONTH_NAMES.map((name, i) => `<option value="${i}">${name}</option>`).join('');
+  }
+  for (const id of ['yearFrom', 'yearTo']) {
+    $(id).innerHTML = years.map((y) => `<option value="${y}">${y}</option>`).join('');
+  }
+}
+
+function setMonthRange(y1, m1, y2, m2) {
+  const ensureYear = (id, y) => {
+    const sel = $(id);
+    if (![...sel.options].some((o) => o.value === String(y))) {
+      sel.appendChild(new Option(String(y), String(y)));
+    }
+    sel.value = String(y);
+  };
+  ensureYear('yearFrom', y1);
+  ensureYear('yearTo', y2);
+  $('monthFrom').value = String(m1);
+  $('monthTo').value = String(m2);
+}
+
+function syncDatesFromMonths() {
+  if (!monthsReady) return true;
+  const y1 = +$('yearFrom').value, m1 = +$('monthFrom').value;
+  const y2 = +$('yearTo').value, m2 = +$('monthTo').value;
+  const start = new Date(y1, m1, 1);
+  const end = new Date(y2, m2 + 1, 0); // последний день месяца
+  if (start > end) {
+    showError('Начало периода не может быть позже конца: проверьте месяцы «с … по …»');
+    return false;
+  }
+  showError('');
+  $('dateFrom').value = toIso(start);
+  $('dateTo').value = toIso(end);
+  return true;
+}
+
+function syncMonthsFromDates() {
+  const from = $('dateFrom').value, to = $('dateTo').value;
+  if (!from || !to) return;
+  const a = parseIso(from), b = parseIso(to);
+  setMonthRange(a.y, a.m, b.y, b.m);
+}
+
+function applyMonthPreset(kind) {
+  const today = new Date();
+  let y1 = today.getFullYear(), m1 = today.getMonth();
+  let y2 = today.getFullYear(), m2 = today.getMonth();
+  if (kind === 'prevMonth') {
+    const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    y1 = y2 = prev.getFullYear();
+    m1 = m2 = prev.getMonth();
+  } else if (kind === 'thisYear') {
+    m1 = 0;
+    m2 = 11;
+  }
+  setMonthRange(y1, m1, y2, m2);
+  if (syncDatesFromMonths()) apply(false);
+}
+
 function showError(msg) {
   const box = $('errorBox');
   box.style.display = msg ? 'block' : 'none';
@@ -212,12 +315,14 @@ function showLoader(text = 'Загрузка данных…') {
   $('loader').style.display = 'flex';
   $('applyBtn').disabled = true;
   $('refreshBtn').disabled = true;
+  document.querySelectorAll('button.preset').forEach((b) => b.disabled = true);
 }
 
 function hideLoader() {
   $('loader').style.display = 'none';
   $('applyBtn').disabled = false;
   $('refreshBtn').disabled = false;
+  document.querySelectorAll('button.preset').forEach((b) => b.disabled = false);
 }
 
 function fmtHours(h) {
@@ -502,6 +607,7 @@ async function apply(refresh = false) {
   const start = $('dateFrom').value;
   const end = $('dateTo').value;
   const interval = $('interval').value;
+  syncMonthsFromDates();
   try {
     // статистика и список задач запрашиваются параллельно
     const [stats, tasks] = await Promise.all([
@@ -536,6 +642,12 @@ async function init() {
     $('dateFrom').value = meta.default_start || '';
     $('dateTo').value = meta.default_end || '';
     $('interval').value = 'month';
+    fillMonthYearOptions(meta);
+    if (meta.default_start && meta.default_end) {
+      const a = parseIso(meta.default_start), b = parseIso(meta.default_end);
+      setMonthRange(a.y, a.m, b.y, b.m);
+    }
+    monthsReady = true;
   } catch (err) {
     showError(err.message || String(err));
     hideLoader();
@@ -549,6 +661,12 @@ $('refreshBtn').addEventListener('click', () => apply(true));
 $('interval').addEventListener('change', () => apply(false));
 $('personMetric').addEventListener('change', () => currentStats && renderPeopleBarsChart(currentStats));
 $('machineMetric').addEventListener('change', () => currentStats && renderMachinesChart(currentStats));
+for (const id of ['monthFrom', 'monthTo', 'yearFrom', 'yearTo']) {
+  $(id).addEventListener('change', syncDatesFromMonths);
+}
+$('presetThisMonth').addEventListener('click', () => applyMonthPreset('thisMonth'));
+$('presetPrevMonth').addEventListener('click', () => applyMonthPreset('prevMonth'));
+$('presetThisYear').addEventListener('click', () => applyMonthPreset('thisYear'));
 $('tasksTable').querySelector('thead').addEventListener('click', (e) => {
   const th = e.target instanceof Element ? e.target.closest('th[data-sort]') : null;
   if (!th) return;
