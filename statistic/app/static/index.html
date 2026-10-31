@@ -581,7 +581,7 @@ function renderSortArrows() {
 
 function renderTasksTable(tasks) {
   const tbody = $('tasksTable').querySelector('tbody');
-  const base = currentMeta ? currentMeta.vikunja_base_url : '';
+  const base = currentMeta ? (currentMeta.vikunja_public_url || currentMeta.vikunja_base_url) : '';
   const rows = sortTasks(tasks).slice(0, 500).map((t) => {
     const url = t.id && base ? `${base}/tasks/${t.id}` : null;
     const link = (text) => url

@@ -20,6 +20,11 @@ class Settings:
     vikunja_base_url: str = field(
         default_factory=lambda: os.getenv("VIKUNJA_BASE_URL", "https://vikunja.ru").rstrip("/")
     )
+    # Публичный адрес веб-интерфейса Vikunja (для ссылок на задачи в браузере).
+    # Если не задан — используется vikunja_base_url.
+    vikunja_public_url: str = field(
+        default_factory=lambda: os.getenv("VIKUNJA_PUBLIC_URL", "").rstrip("/")
+    )
     vikunja_token: str = field(default_factory=lambda: os.getenv("VIKUNJA_TOKEN", ""))
     # Префиксы API в порядке предпочтения (v2 -> v1), выбирается автоматически
     vikunja_api_prefixes: tuple[str, ...] = ("/api/v2", "/api/v1")
@@ -52,6 +57,11 @@ class Settings:
     @property
     def auth_enabled(self) -> bool:
         return bool(self.auth_user) and bool(self.auth_pass)
+
+    @property
+    def vikunja_web_url(self) -> str:
+        """URL веб-интерфейса Vikunja для ссылок на задачи из браузера."""
+        return self.vikunja_public_url or self.vikunja_base_url
 
 
 settings = Settings()

@@ -7,6 +7,9 @@ services:
       - .env
     environment:
       - SERVICE_PORT=${SERVICE_PORT:-8001}
+      # Внутри Docker ходим в API Vikunja по внутренней сети (контейнер vikunja_app),
+      # а не через внешний адрес. Публичные ссылки берутся из VIKUNJA_PUBLIC_URL.
+      - VIKUNJA_BASE_URL=http://vikunja_app:3456
     expose:
       - "${SERVICE_PORT:-8001}"
     volumes:

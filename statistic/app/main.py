@@ -160,7 +160,7 @@ async def api_meta() -> dict:
         "default_start": (min_date or today).isoformat(),
         "default_end": (max_date or today).isoformat(),
         "timezone": settings.timezone,
-        "vikunja_base_url": settings.vikunja_base_url,
+        "vikunja_public_url": settings.vikunja_web_url,
         "token_configured": settings.token_configured,
     }
 

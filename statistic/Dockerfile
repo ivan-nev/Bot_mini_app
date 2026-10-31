@@ -1,11 +1,11 @@
-FROM python:3.12-slim
+docker ps -aFROM python:3.12-slim
 
 # Не создавать .pyc и не буферизовать stdout — логи видны сразу
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     SERVICE_PORT=8001
 
-WORKDIR /app
+WORKDIR /appdocker ps
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

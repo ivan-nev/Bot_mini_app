@@ -49,7 +49,8 @@ VIKUNJA_TOKEN=paste_your_token_here
 | Переменная | По умолчанию | Описание |
 |---|---|---|
 | `VIKUNJA_TOKEN` | — | API-токен Vikunja (обязательно) |
-| `VIKUNJA_BASE_URL` | `https://vikunja.ru` | адрес Vikunja |
+| `VIKUNJA_BASE_URL` | `https://vikunja.ru` | адрес API Vikunja (в Docker переопределяется на `http://vikunja_app:3456`) |
+| `VIKUNJA_PUBLIC_URL` | `VIKUNJA_BASE_URL` | публичный адрес веб-интерфейса Vikunja — по нему строятся ссылки на задачи в браузере |
 | `PROJECT_ID` | `1` | id проекта «Разработка УП» |
 | `TZ` | `UTC` | часовой пояс для границ дня/недели/месяца (например `Asia/Yekaterinburg`) |
 | `CACHE_TTL` | `300` | время жизни кэша задач, секунд (0 — отключить) |
@@ -80,6 +81,9 @@ docker compose up -d --build
 
 - образ собирается из `Dockerfile` (python:3.12-slim, uvicorn на порту `SERVICE_PORT`);
 - все переменные из `.env` попадают в контейнер через `env_file`;
+- **API Vikunja вызывается по внутренней сети Docker** (`http://vikunja_app:3456`,
+  переопределяется в `docker-compose.yml`), а ссылки на задачи в браузере
+  строятся по `VIKUNJA_PUBLIC_URL` (`https://vikunja.ru`);
 - кэш задач лежит в `./cache` (volume) и переживает перезапуск контейнера;
 - Traefik сам выпускает сертификат Let's Encrypt (websecure, `certresolver=le`)
   и делает редирект HTTP → HTTPS;
