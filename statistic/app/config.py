@@ -29,6 +29,9 @@ class Settings:
     # Часовой пояс, в котором считаются интервалы день/неделя/месяц
     timezone: str = field(default_factory=lambda: os.getenv("TZ", "UTC"))
 
+    # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO").upper())
+
     # Кэш задач (секунды); 0 — не кэшировать
     cache_ttl: int = field(default_factory=lambda: int(os.getenv("CACHE_TTL", "300")))
     cache_dir: Path = field(

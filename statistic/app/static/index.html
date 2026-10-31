@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Статистика — Разработка УП</title>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -262,15 +263,15 @@ function renderSummaryChart(stats) {
   const datasets = [
     {
       type: 'bar', label: 'Выполнено', data: stats.totals.done,
-      backgroundColor: 'rgba(76,145,255,0.75)', stack: 'total', order: 2,
+      backgroundColor: 'rgb(253,188,12)', stack: 'total', order: 2,
     },
     {
       type: 'bar', label: 'Создано', data: stats.totals.created,
-      backgroundColor: 'rgba(255,190,11,0.75)', stack: 'total', order: 2,
+      backgroundColor: 'rgb(14,172,105)', stack: 'total', order: 2,
     },
     {
       type: 'line', label: 'Накоплено выполнено', data: stats.totals.cumulative_done,
-      borderColor: '#0ead69', backgroundColor: '#0ead69', tension: 0.3,
+      borderColor: '#1a3a59', backgroundColor: '#365981', tension: 0.3,
       yAxisID: 'y1', order: 1, pointRadius: 3,
     },
   ];
@@ -309,8 +310,8 @@ function renderPeopleBarChart(stats) {
     data: {
       labels,
       datasets: [
-        { label: 'Выполнено', data: done, backgroundColor: 'rgba(76,145,255,0.85)' },
-        { label: 'Создано', data: created, backgroundColor: 'rgba(255,190,11,0.85)' },
+        { label: 'Выполнено', data: done, backgroundColor: 'rgba(14,173,105,0.85)' },
+        { label: 'Создано', data: created, backgroundColor: 'rgb(253,188,12)' },
       ],
     },
     options: {
