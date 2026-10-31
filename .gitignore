@@ -7,3 +7,9 @@ venv/
 .DS_Store
 *.log
 .idea
+/statistic/cache/tasks_1.json
+/certs/accounts/acme-v02.api.letsencrypt.org/directory/8b9c695dec2be20f4bbe4361a87bafee/meta.json
+/certs/accounts/acme-v02.api.letsencrypt.org/directory/8b9c695dec2be20f4bbe4361a87bafee/private_key.json
+/certs/accounts/acme-v02.api.letsencrypt.org/directory/8b9c695dec2be20f4bbe4361a87bafee/regr.json
+/vikunja/files/2
+/Server/templates/metric_work.html

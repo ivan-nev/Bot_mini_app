@@ -69,6 +69,9 @@
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
   th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: #fff; }
+  th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+  th.sortable:hover { color: var(--accent); }
+  th .arrow { margin-left: 4px; font-size: 10px; color: var(--accent); }
   .num { text-align: right; }
   .error {
     background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 10px;
@@ -167,7 +170,12 @@
         <table id="tasksTable">
           <thead>
             <tr>
-              <th>№</th><th>Задача</th><th>Исполнители</th><th>Создана</th><th>Выполнена</th><th>Статус</th>
+              <th data-sort="identifier" class="sortable" title="Сортировать по номеру">№<span class="arrow"></span></th>
+              <th data-sort="title" class="sortable" title="Сортировать по названию">Задача<span class="arrow"></span></th>
+              <th data-sort="assignees" class="sortable" title="Сортировать по исполнителям">Исполнители<span class="arrow"></span></th>
+              <th data-sort="created" class="sortable" title="Сортировать по дате создания">Создана<span class="arrow"></span></th>
+              <th data-sort="done_at" class="sortable" title="Сортировать по дате выполнения">Выполнена<span class="arrow"></span></th>
+              <th data-sort="done" class="sortable" title="Сортировать по статусу">Статус<span class="arrow"></span></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -186,6 +194,9 @@ const colorFor = (name, i) => PALETTE[i % PALETTE.length];
 
 let summaryChart, peopleBarChart, shareChart, peopleLinesChart, machinesChart;
 let currentStats = null;
+let currentMeta = null;
+let currentTasks = [];
+const tasksSort = { key: 'done_at', dir: 'asc' };
 
 const $ = (id) => document.getElementById(id);
 const fmtDate = (iso) => iso ? iso.slice(0, 10) : '';
@@ -426,18 +437,63 @@ function renderMachinesChart(stats) {
   });
 }
 
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function sortTasks(tasks) {
+  const { key, dir } = tasksSort;
+  const mult = dir === 'asc' ? 1 : -1;
+  const valueOf = (t) => {
+    switch (key) {
+      case 'identifier': return String(t.identifier ?? t.id ?? '');
+      case 'title': return t.title || '';
+      case 'assignees': return (t.assignees || []).join(', ');
+      case 'created': return t.created || '';
+      case 'done_at': return t.done_at || t.created || '';
+      case 'done': return t.done ? 1 : 0;
+      default: return '';
+    }
+  };
+  return tasks.slice().sort((a, b) => {
+    const va = valueOf(a), vb = valueOf(b);
+    const emptyA = va === '' || va === null || va === undefined;
+    const emptyB = vb === '' || vb === null || vb === undefined;
+    if (emptyA !== emptyB) return emptyA ? 1 : -1; // пустые значения — всегда в конец
+    const cmp = String(va).localeCompare(String(vb), 'ru', { numeric: true, sensitivity: 'base' });
+    return cmp * mult;
+  });
+}
+
+function renderSortArrows() {
+  document.querySelectorAll('#tasksTable thead th[data-sort]').forEach((th) => {
+    const arrow = th.querySelector('.arrow');
+    if (arrow) {
+      arrow.textContent = th.dataset.sort === tasksSort.key
+        ? (tasksSort.dir === 'asc' ? '▲' : '▼')
+        : '';
+    }
+  });
+}
+
 function renderTasksTable(tasks) {
   const tbody = $('tasksTable').querySelector('tbody');
-  const rows = tasks.slice().sort((a, b) => (a.done_at || a.created || '').localeCompare(b.done_at || b.created || ''));
-  tbody.innerHTML = rows.slice(0, 500).map(t => `
+  const base = currentMeta ? currentMeta.vikunja_base_url : '';
+  const rows = sortTasks(tasks).slice(0, 500).map((t) => {
+    const url = t.id && base ? `${base}/tasks/${t.id}` : null;
+    const link = (text) => url
+      ? `<a href="${url}" target="_blank" rel="noopener">${esc(text)}</a>`
+      : esc(text);
+    return `
     <tr>
-      <td>${t.identifier || t.id || ''}</td>
-      <td>${t.title || ''}</td>
-      <td>${(t.assignees || []).join(', ') || '—'}</td>
+      <td>${link(t.identifier || t.id || '')}</td>
+      <td>${link(t.title || '')}</td>
+      <td>${esc((t.assignees || []).join(', ') || '—')}</td>
       <td>${fmtDate(t.created)}</td>
       <td>${fmtDate(t.done_at) || '—'}</td>
       <td>${t.done ? '✅ выполнена' : 'открыта'}</td>
-    </tr>`).join('') || '<tr><td colspan="6">Нет задач в выбранном периоде</td></tr>';
+    </tr>`;
+  }).join('') || '<tr><td colspan="6">Нет задач в выбранном периоде</td></tr>';
+  tbody.innerHTML = rows;
+  renderSortArrows();
 }
 
 async function apply(refresh = false) {
@@ -453,6 +509,7 @@ async function apply(refresh = false) {
       loadTasks(start, end, refresh),
     ]);
     currentStats = stats;
+    currentTasks = tasks.tasks || [];
     renderKpis(stats);
     renderSummaryChart(stats);
     renderPeopleBarChart(stats);
@@ -471,6 +528,7 @@ async function init() {
   showLoader('Загрузка…');
   try {
     const meta = await loadMeta();
+    currentMeta = meta;
     $('projectTitle').textContent = meta.project.title || 'Разработка УП';
     $('projectMeta').textContent =
       `задач в проекте: ${meta.tasks_total} · диапазон данных: ${meta.min_date || '—'} … ${meta.max_date || '—'} · tz: ${meta.timezone}` +
@@ -491,6 +549,18 @@ $('refreshBtn').addEventListener('click', () => apply(true));
 $('interval').addEventListener('change', () => apply(false));
 $('personMetric').addEventListener('change', () => currentStats && renderPeopleBarsChart(currentStats));
 $('machineMetric').addEventListener('change', () => currentStats && renderMachinesChart(currentStats));
+$('tasksTable').querySelector('thead').addEventListener('click', (e) => {
+  const th = e.target instanceof Element ? e.target.closest('th[data-sort]') : null;
+  if (!th) return;
+  const key = th.dataset.sort;
+  if (tasksSort.key === key) {
+    tasksSort.dir = tasksSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    tasksSort.key = key;
+    tasksSort.dir = 'asc';
+  }
+  renderTasksTable(currentTasks);
+});
 
 init();
 </script>
