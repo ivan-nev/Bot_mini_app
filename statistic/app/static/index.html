@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Статистика — Разработка УП</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --accent: #4c91ff;
+    --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: var(--bg);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--text);
+  }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 20px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field input, .field select {
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; background: #fff; min-width: 150px;
+  }
+  button {
+    padding: 9px 18px; border: none; border-radius: 8px; background: var(--accent);
+    color: #fff; font-size: 14px; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.08); }
+  button:disabled { opacity: 0.6; cursor: wait; }
+  .loader {
+    position: fixed; inset: 0; background: rgba(244, 246, 249, 0.8);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; z-index: 1000; backdrop-filter: blur(2px);
+  }
+  .spinner {
+    width: 52px; height: 52px; border: 5px solid #dbe4f0;
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-text { font-size: 15px; color: var(--text); font-weight: 600; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+  }
+  .kpi .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .kpi .name { font-size: 13px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+  .grid .wide { grid-column: 1 / -1; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+  }
+  .card h2 { font-size: 15px; margin: 0 0 12px; }
+  .chart-wrap { position: relative; height: 340px; }
+  .chart-wrap.tall { height: 420px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: #fff; }
+  .num { text-align: right; }
+  .error {
+    background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 16px; display: none; white-space: pre-wrap;
+  }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  details { margin-bottom: 20px; }
+  details summary { cursor: pointer; font-weight: 600; padding: 10px 0; }
+  .scroll { max-height: 480px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="projectTitle">Разработка УП</h1>
+    <div class="sub" id="projectMeta">загрузка…</div>
+  </div>
+</header>
+
+<div class="error" id="errorBox"></div>
+
+<div class="loader" id="loader">
+  <div class="spinner"></div>
+  <div class="loader-text" id="loaderText">Загрузка данных…</div>
+</div>
+
+<div class="controls">
+  <div class="field">
+    <label for="dateFrom">Начало периода</label>
+    <input type="date" id="dateFrom">
+  </div>
+  <div class="field">
+    <label for="dateTo">Конец периода</label>
+    <input type="date" id="dateTo">
+  </div>
+  <div class="field">
+    <label for="interval">Разбивка</label>
+    <select id="interval">
+      <option value="day">День</option>
+      <option value="week">Неделя</option>
+      <option value="month" selected>Месяц</option>
+    </select>
+  </div>
+  <button id="applyBtn">Применить</button>
+  <button id="refreshBtn" title="Перечитать данные из Vikunja" style="background:#6b7280">Обновить данные</button>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+  <div class="card wide">
+    <h2>Сводный график: выполнено и создано за период</h2>
+    <div class="chart-wrap"><canvas id="summaryChart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Кто сколько сделал (выполнено за период)</h2>
+    <div class="chart-wrap"><canvas id="peopleBarChart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Доля выполненных задач по исполнителям</h2>
+    <div class="chart-wrap"><canvas id="shareChart"></canvas></div>
+  </div>
+
+  <div class="card wide">
+    <h2>Динамика по исполнителям</h2>
+    <div class="field" style="margin-bottom:10px">
+      <label for="personMetric">Показатель</label>
+      <select id="personMetric" style="min-width:180px">
+        <option value="done">Выполнено</option>
+        <option value="created">Создано</option>
+      </select>
+    </div>
+    <div class="chart-wrap tall"><canvas id="peopleLinesChart"></canvas></div>
+  </div>
+
+  <div class="card wide">
+    <h2>Станки (метки) — по периодам</h2>
+    <div class="field" style="margin-bottom:10px">
+      <label for="machineMetric">Показатель</label>
+      <select id="machineMetric" style="min-width:180px">
+        <option value="done">Выполнено</option>
+        <option value="created">Создано</option>
+      </select>
+    </div>
+    <div class="chart-wrap tall"><canvas id="machinesChart"></canvas></div>
+    <div class="hint">Похожие названия станков объединены: «пума»/«puma»/«Пума 1» → Пума, «са3м» → Саста 3м, «mynx» → Фрезер ЧПУ Минкс, «solex» → Солекс и т.д.</div>
+  </div>
+
+  <div class="card wide">
+    <details>
+      <summary>Задачи за период</summary>
+      <div class="scroll">
+        <table id="tasksTable">
+          <thead>
+            <tr>
+              <th>№</th><th>Задача</th><th>Исполнители</th><th>Создана</th><th>Выполнена</th><th>Статус</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+const PALETTE = [
+  '#4c91ff', '#ffbe0b', '#d95c26', '#8338ec', '#0ead69', '#ef476f', '#06d6a0', '#8d6e63',
+  '#d62828', '#264653', '#e9c46a', '#9b5de5', '#f77f00', '#003049', '#e76f51', '#5f0f40'
+];
+const colorFor = (name, i) => PALETTE[i % PALETTE.length];
+
+let summaryChart, peopleBarChart, shareChart, peopleLinesChart, machinesChart;
+let currentStats = null;
+
+const $ = (id) => document.getElementById(id);
+const fmtDate = (iso) => iso ? iso.slice(0, 10) : '';
+
+function showError(msg) {
+  const box = $('errorBox');
+  box.style.display = msg ? 'block' : 'none';
+  box.textContent = msg || '';
+}
+
+function showLoader(text = 'Загрузка данных…') {
+  $('loaderText').textContent = text;
+  $('loader').style.display = 'flex';
+  $('applyBtn').disabled = true;
+  $('refreshBtn').disabled = true;
+}
+
+function hideLoader() {
+  $('loader').style.display = 'none';
+  $('applyBtn').disabled = false;
+  $('refreshBtn').disabled = false;
+}
+
+function fmtHours(h) {
+  if (h == null) return '—';
+  if (h < 48) return Math.round(h) + ' ч';
+  return (h / 24).toFixed(1).replace('.', ',') + ' дн';
+}
+
+async function loadMeta() {
+  const res = await fetch('/api/meta');
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || 'Не удалось получить метаданные');
+  }
+  return res.json();
+}
+
+async function loadStats(start, end, interval, refresh = false) {
+  const params = new URLSearchParams({ start, end, interval });
+  if (refresh) params.set('refresh', '1');
+  const res = await fetch('/api/stats?' + params);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || 'Не удалось получить статистику');
+  }
+  return res.json();
+}
+
+async function loadTasks(start, end, refresh = false) {
+  const params = new URLSearchParams({ start, end });
+  if (refresh) params.set('refresh', '1');
+  const res = await fetch('/api/tasks?' + params);
+  if (!res.ok) throw new Error('Не удалось получить список задач');
+  return res.json();
+}
+
+function renderKpis(stats) {
+  const s = stats.summary;
+  const cards = [
+    { name: 'Выполнено за период', value: s.total_done },
+    { name: 'Создано за период', value: s.total_created },
+    { name: 'Открыто сейчас', value: s.open_now },
+    { name: 'Среднее время выполнения', value: fmtHours(s.avg_completion_hours) },
+  ];
+  $('kpis').innerHTML = cards.map(c =>
+    `<div class="kpi"><div class="name">${c.name}</div><div class="value">${c.value}</div></div>`
+  ).join('');
+}
+
+function renderSummaryChart(stats) {
+  const ctx = $('summaryChart').getContext('2d');
+  const labels = stats.labels;
+  const fullLabels = stats.full_labels;
+  const datasets = [
+    {
+      type: 'bar', label: 'Выполнено', data: stats.totals.done,
+      backgroundColor: 'rgba(76,145,255,0.75)', stack: 'total', order: 2,
+    },
+    {
+      type: 'bar', label: 'Создано', data: stats.totals.created,
+      backgroundColor: 'rgba(255,190,11,0.75)', stack: 'total', order: 2,
+    },
+    {
+      type: 'line', label: 'Накоплено выполнено', data: stats.totals.cumulative_done,
+      borderColor: '#0ead69', backgroundColor: '#0ead69', tension: 0.3,
+      yAxisID: 'y1', order: 1, pointRadius: 3,
+    },
+  ];
+  if (summaryChart) summaryChart.destroy();
+  summaryChart = new Chart(ctx, {
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: (items) => fullLabels[items[0].dataIndex] || items[0].label,
+          },
+        },
+      },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Задач за ' + stats.interval } },
+        y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Накоплено' } },
+      },
+    },
+  });
+}
+
+function renderPeopleBarChart(stats) {
+  const ctx = $('peopleBarChart').getContext('2d');
+  const people = Object.entries(stats.people)
+    .sort((a, b) => b[1].total_done - a[1].total_done);
+  const labels = people.map(([name]) => name);
+  const done = people.map(([, p]) => p.total_done);
+  const created = people.map(([, p]) => p.total_created);
+  if (peopleBarChart) peopleBarChart.destroy();
+  peopleBarChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Выполнено', data: done, backgroundColor: 'rgba(76,145,255,0.85)' },
+        { label: 'Создано', data: created, backgroundColor: 'rgba(255,190,11,0.85)' },
+      ],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+  });
+}
+
+function renderShareChart(stats) {
+  const ctx = $('shareChart').getContext('2d');
+  const people = Object.entries(stats.people)
+    .filter(([, p]) => p.total_done > 0)
+    .sort((a, b) => b[1].total_done - a[1].total_done);
+  if (shareChart) shareChart.destroy();
+  shareChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: people.map(([name]) => name),
+      datasets: [{
+        data: people.map(([, p]) => p.total_done),
+        backgroundColor: people.map(([, p], i) => colorFor(p, i)),
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: {
+          callbacks: {
+            label: (item) => {
+              const total = item.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = total ? (item.raw / total * 100).toFixed(1) : 0;
+              return ` ${item.label}: ${item.raw} (${pct}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+function renderPeopleBarsChart(stats) {
+  const ctx = $('peopleLinesChart').getContext('2d');
+  const metric = $('personMetric').value; // 'done' | 'created'
+  const people = Object.entries(stats.people)
+    .sort((a, b) => b[1].total_done - a[1].total_done);
+  const datasets = people.map(([name, p], i) => ({
+    label: name,
+    data: p[metric],
+    backgroundColor: colorFor(name, i),
+    borderColor: colorFor(name, i),
+    borderWidth: 1,
+    borderRadius: 3,
+  }));
+  if (peopleLinesChart) peopleLinesChart.destroy();
+  peopleLinesChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: stats.labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: (items) => stats.full_labels[items[0].dataIndex] || items[0].label,
+          },
+        },
+      },
+      scales: {
+        x: { stacked: false },
+        y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: metric === 'done' ? 'Выполнено задач' : 'Создано задач' } },
+      },
+    },
+  });
+}
+
+function renderMachinesChart(stats) {
+  const ctx = $('machinesChart').getContext('2d');
+  const metric = $('machineMetric').value; // 'done' | 'created'
+  const machines = Object.entries(stats.machines || {})
+    .sort((a, b) => b[1].total_done - a[1].total_done);
+  const datasets = machines.map(([name, m], i) => ({
+    label: name,
+    data: m[metric],
+    backgroundColor: colorFor(name, i),
+    borderColor: colorFor(name, i),
+    borderWidth: 1,
+    borderRadius: 3,
+  }));
+  if (machinesChart) machinesChart.destroy();
+  machinesChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: stats.labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: (items) => stats.full_labels[items[0].dataIndex] || items[0].label,
+          },
+        },
+      },
+      scales: {
+        x: { stacked: false },
+        y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: metric === 'done' ? 'Выполнено задач' : 'Создано задач' } },
+      },
+    },
+  });
+}
+
+function renderTasksTable(tasks) {
+  const tbody = $('tasksTable').querySelector('tbody');
+  const rows = tasks.slice().sort((a, b) => (a.done_at || a.created || '').localeCompare(b.done_at || b.created || ''));
+  tbody.innerHTML = rows.slice(0, 500).map(t => `
+    <tr>
+      <td>${t.identifier || t.id || ''}</td>
+      <td>${t.title || ''}</td>
+      <td>${(t.assignees || []).join(', ') || '—'}</td>
+      <td>${fmtDate(t.created)}</td>
+      <td>${fmtDate(t.done_at) || '—'}</td>
+      <td>${t.done ? '✅ выполнена' : 'открыта'}</td>
+    </tr>`).join('') || '<tr><td colspan="6">Нет задач в выбранном периоде</td></tr>';
+}
+
+async function apply(refresh = false) {
+  showError('');
+  showLoader(refresh ? 'Обновление данных из Vikunja…' : 'Загрузка данных…');
+  const start = $('dateFrom').value;
+  const end = $('dateTo').value;
+  const interval = $('interval').value;
+  try {
+    // статистика и список задач запрашиваются параллельно
+    const [stats, tasks] = await Promise.all([
+      loadStats(start, end, interval, refresh),
+      loadTasks(start, end, refresh),
+    ]);
+    currentStats = stats;
+    renderKpis(stats);
+    renderSummaryChart(stats);
+    renderPeopleBarChart(stats);
+    renderShareChart(stats);
+    renderPeopleBarsChart(stats);
+    renderMachinesChart(stats);
+    renderTasksTable(tasks.tasks || []);
+  } catch (err) {
+    showError(err.message || String(err));
+  } finally {
+    hideLoader();
+  }
+}
+
+async function init() {
+  showLoader('Загрузка…');
+  try {
+    const meta = await loadMeta();
+    $('projectTitle').textContent = meta.project.title || 'Разработка УП';
+    $('projectMeta').textContent =
+      `задач в проекте: ${meta.tasks_total} · диапазон данных: ${meta.min_date || '—'} … ${meta.max_date || '—'} · tz: ${meta.timezone}` +
+      (meta.token_configured ? '' : ' · офлайн-режим (кэш)');
+    $('dateFrom').value = meta.default_start || '';
+    $('dateTo').value = meta.default_end || '';
+    $('interval').value = 'month';
+  } catch (err) {
+    showError(err.message || String(err));
+    hideLoader();
+    return;
+  }
+  await apply();
+}
+
+$('applyBtn').addEventListener('click', () => apply(false));
+$('refreshBtn').addEventListener('click', () => apply(true));
+$('interval').addEventListener('change', () => apply(false));
+$('personMetric').addEventListener('change', () => currentStats && renderPeopleBarsChart(currentStats));
+$('machineMetric').addEventListener('change', () => currentStats && renderMachinesChart(currentStats));
+
+init();
+</script>
+</body>
+</html>
